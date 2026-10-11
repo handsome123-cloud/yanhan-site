@@ -1258,6 +1258,14 @@ html.deck-mode .deck{
 .slide.active .reveal:nth-child(3){transition-delay:.4s}
 .slide.active .reveal:nth-child(4){transition-delay:.5s}
 
+/* 分支相册：打开时同样要让内部 .reveal 显形
+   （分支屏不是 .active，必须单独给规则，否则内容一直 opacity:0） */
+.branch-slide.open .reveal{opacity:1;transform:translateY(0)}
+.branch-slide.open .reveal:nth-child(1){transition-delay:.12s}
+.branch-slide.open .reveal:nth-child(2){transition-delay:.22s}
+.branch-slide.open .reveal:nth-child(3){transition-delay:.32s}
+.branch-slide.open .reveal:nth-child(4){transition-delay:.4s}
+
 html.deck-mode .sec-head{margin-bottom:clamp(22px,3.6vh,42px)}
 
 /* ==========================================================
@@ -2057,7 +2065,33 @@ html[data-theme="dark"] #s7::after{
 }
 .branch-card:hover .branch-go{opacity:1;transform:translateY(0)}
 
-/* 分支屏通用 */
+/* 分支屏通用 —— 不参与主翻页，靠 .open 才显形 */
+.branch-slide{
+  position:absolute;
+  opacity:0;
+  visibility:hidden;
+  pointer-events:none;
+  transform:scale(.94) translateY(2vh);
+  filter:blur(10px);
+  transition:opacity .55s cubic-bezier(.22,1,.36,1),
+             transform .65s cubic-bezier(.22,1,.36,1),
+             filter .55s cubic-bezier(.22,1,.36,1),
+             visibility 0s linear .6s;
+}
+.branch-slide.open{
+  opacity:1;
+  visibility:visible;
+  pointer-events:auto;
+  transform:none;
+  filter:none;
+  transition-delay:0s;
+  /* 自身不透明，完整盖住底下的影像记忆屏 */
+  background:var(--paper);
+  /* 并在左缘投一道阴影，制造"浮出来"的层次感 */
+  box-shadow:-30px 0 60px -20px rgba(60,45,90,.28);
+}
+html.branch-mode{overflow:hidden}
+
 .branch-slide .wrap{position:relative}
 .branch-back{
   position:absolute;top:-6px;left:0;z-index:4;
@@ -2546,13 +2580,10 @@ html[data-theme="dark"] #s7::after{
     <a href="#s2" data-slide="2">此刻</a>
     <a href="#s3" data-slide="3">童年回忆</a>
     <a href="#s4" data-slide="4">影像记忆</a>
-    <a href="#s4a" data-slide="5">旅游</a>
-    <a href="#s4b" data-slide="6">美食</a>
-    <a href="#s4c" data-slide="7">日常</a>
-    <a href="#s5" data-slide="8">她他它</a>
-    <a href="#s6" data-slide="9">一句话</a>
-    <a href="#s7" data-slide="10">小游戏</a>
-    <a href="#s8" data-slide="12">联系</a>
+    <a href="#s5" data-slide="5">她他它</a>
+    <a href="#s6" data-slide="6">一句话</a>
+    <a href="#s7" data-slide="8">小游戏</a>
+    <a href="#s8" data-slide="9">联系</a>
   </div>
 </nav>
 
@@ -3338,7 +3369,15 @@ html[data-theme="dark"] #s7::after{
   };
 })();
 
-const slides = Array.from(document.querySelectorAll('.slide'));
+const allSlides = Array.from(document.querySelectorAll('.slide'));
+
+/* ----------------------------------------------------------
+   分支屏（.branch-slide）不参与主翻页序列：
+   正常向下翻只会经过主序列，分支屏仅在被点击时"跳出"显示
+   ---------------------------------------------------------- */
+const branchSlides = allSlides.filter(s => s.classList.contains('branch-slide'));
+const slides = allSlides.filter(s => !s.classList.contains('branch-slide'));
+
 const deck   = document.getElementById('deck');
 const dotsBox= document.getElementById('dots');
 const curNumEl = document.getElementById('curNum');
@@ -3351,10 +3390,10 @@ let animating = false;
 const DURATION = 1000;                 // 与 CSS transition 对齐
 totalNumEl.textContent = slides.length;
 
-/* 游戏屏索引（第 8 屏，0 基） */
+/* 游戏屏索引（0 基，主序列内） */
 const GAME_INDEX = slides.findIndex(s => s.classList.contains('game-slide'));
 
-/* ---------- 构建右侧圆点 ---------- */
+/* ---------- 构建右侧圆点（仅主序列） ---------- */
 slides.forEach((s, i) => {
   const b = document.createElement('button');
   b.setAttribute('data-label', s.dataset.label || ('第 ' + (i+1) + ' 屏'));
@@ -3367,12 +3406,20 @@ const dots = Array.from(dotsBox.children);
 /* ---------- 应用分页模式 ---------- */
 document.documentElement.classList.add('deck-mode');
 
-/* 每屏绝对定位，纵向排列（用像素，避免 CSS vh 与 innerHeight 的细微不一致） */
+/* 每屏绝对定位：主序列按序排；分支屏叠在影像记忆那一格上（同一位置，靠 z-index 覆盖） */
 let slideH = innerHeight;
 function layout(){
   slideH = innerHeight;
   slides.forEach((s, i) => {
     s.style.top = (i * slideH) + 'px';
+    s.style.height = slideH + 'px';
+    s.style.zIndex = '1';
+  });
+  // 分支屏统一放在「影像记忆」所在行的位置上
+  const mediaIdx = slides.findIndex(s => s.id === 's4');
+  const rowIdx = mediaIdx < 0 ? 0 : mediaIdx;
+  branchSlides.forEach(s => {
+    s.style.top = (rowIdx * slideH) + 'px';
     s.style.height = slideH + 'px';
   });
   deck.style.transform = 'translateY(' + (-cur * slideH) + 'px)';
@@ -3386,8 +3433,11 @@ const guide = document.getElementById('guide');
 const guideText = document.getElementById('guideText');
 const LAST = slides.length - 1;
 
+let branchOpen = null;                 // 当前打开的分支屏（null = 未打开）
+
 function setActive(){
   slides.forEach((s, i) => s.classList.toggle('active', i === cur));
+  // 分支屏激活态由 openBranch/closeBranch 单独管理
   dots.forEach((d, i) => {
     d.classList.toggle('on', i === cur);
     // 已看过的屏点亮为暖色（含当前屏）
@@ -3430,16 +3480,13 @@ function pulse(el){
   setTimeout(() => el.classList.remove('pulse'), 520);
 }
 
-/* 每屏的幽默引导语（引导到下一屏） */
+/* 每屏的幽默引导语（引导到下一屏）· 仅对应主序列 */
 const GUIDE_LINES = [
   '别停在这儿，<b>往下看看我是谁</b>',            // 0 首页 → 关于我
   '关于我讲完了，<b>来看看我最近在忙啥</b>',        // 1 关于我 → 此刻
   '现在的我说完了，<b>翻回过去听听故事</b>',        // 2 此刻 → 童年回忆
   '故事太多了，<b>给你看点照片和视频</b>',          // 3 童年回忆 → 影像记忆
-  '这几个抽屉还没拉开，<b>进去翻翻</b>',            // 4 影像记忆 → 旅游生活
-  '看完了风景，<b>再聊聊当年的她他它</b>',          // 4A 旅游生活 → 美食
-  '吃饱了？<b>接着往下走</b>',                      // 4B 美食 → 日常碎片
-  '日常也说完了，<b>去见见那些人</b>',              // 4C 日常碎片 → 她他它
+  '想看更多？<b>点开那三个抽屉翻翻</b>',            // 4 影像记忆 → 她他它
   '人聊完了，<b>说句正经的</b>',                    // 5 她他它 → 一句话
   '话说完了，<b>前面有块果冻在等你</b>',            // 6 一句话 → 捏一捏
   '捏爽了吗？<b>来玩个小游戏吧</b>',                // 7 捏一捏 → 小游戏
@@ -3464,6 +3511,8 @@ if (guide) {
 
 function goTo(i, instant){
   i = Math.max(0, Math.min(slides.length - 1, i));
+  // 若正打开着某个分支相册，翻页时先把它收起来
+  if (branchOpen) closeBranch(true);
   if (i === cur && !animating) return;
   cur = i;
   setActive();
@@ -3493,6 +3542,43 @@ function goTo(i, instant){
 }
 function next(){ goTo(cur + 1); }
 function prev(){ goTo(cur - 1); }
+
+/* ---------- 分支相册：跳出 / 收回 ---------- */
+function openBranch(el){
+  if (!el) return;
+  if (branchOpen && branchOpen !== el) closeBranch(true);
+
+  branchOpen = el;
+  el.style.zIndex = '30';           // 压在影像记忆屏之上
+
+  el.classList.add('open');
+  el.querySelectorAll('.reveal').forEach(x => x.classList.add('in'));
+  document.documentElement.classList.add('branch-mode');
+
+  // 焦点移到相册，方便键盘 / 读屏
+  const back = el.querySelector('[data-back]');
+  if (back) back.focus({ preventScroll: true });
+}
+
+function closeBranch(silent){
+  const el = branchOpen;
+  if (!el) return;
+  branchOpen = null;
+  el.classList.remove('open');
+  el.style.zIndex = '';
+  document.documentElement.classList.remove('branch-mode');
+
+  // 收回后把焦点还给影像记忆屏里的入口按钮
+  const opener = document.querySelector('[data-jump="' + el.id + '"]');
+  if (opener && !silent) opener.focus({ preventScroll: true });
+}
+window.openBranch = openBranch;
+window.closeBranch = closeBranch;
+
+/* 键盘 Esc 关闭分支相册 */
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape' && branchOpen) closeBranch();
+});
 
 /* 初始化激活态 */
 setActive();
@@ -3717,28 +3803,20 @@ if (window.matchMedia('(hover:hover) and (pointer:fine)').matches) {
 }
 
 /* ==========================================================
-   9.6 分支相册跳转：影像记忆 → 旅游 / 美食 / 日常
-   卡片进入 / 返回按钮退回；跳转后自动聚焦顶部
+   9.6 分支相册：点击卡片"跳出"相册，不占用主翻页序列
+   打开 / 关闭（含遮罩、Esc、焦点还原）
    ========================================================== */
 (function branchNav(){
-  const idxOf = el => slides.indexOf(el);
-  let backTo = 's4';                        // 记录从哪进来的，便于返回
-
   document.querySelectorAll('[data-jump]').forEach(btn => {
     btn.addEventListener('click', () => {
       const target = document.getElementById(btn.dataset.jump);
       if (!target) return;
-      backTo = 's4';
-      goTo(idxOf(target));
+      openBranch(target);
     });
   });
 
   document.querySelectorAll('[data-back]').forEach(btn => {
-    btn.addEventListener('click', () => {
-      const target = document.getElementById(btn.dataset.back);
-      if (!target) return;
-      goTo(idxOf(target));
-    });
+    btn.addEventListener('click', () => closeBranch());
   });
 
   // 相册槽位：读 assets/albums.json 决定显示哪些照片。
