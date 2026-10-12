@@ -386,7 +386,7 @@ html[data-theme="dark"] .motion .ripple-ring{border-color:rgba(180,210,255,.5)}
   }
 
   /* 分支相册屏：环形轮播收紧 */
-  .branch-ring{height:clamp(200px,28vh,260px)}
+  .branch-ring{height:clamp(210px,31vh,300px)}
   .branch-slide .ring-card{--cw:180px;--ch:135px}
   .branch-slide .ring-ico{width:38px;height:38px;font-size:1.2rem}
   .branch-slide .ring-title{font-size:.78rem}
@@ -2078,20 +2078,20 @@ body > .branch-back-fab.bb-parked{display:flex}
 .branch-slide{padding-bottom:clamp(44px,5.6vh,64px)}
 
 /* 分支环比主环略小一点，给返回键和标题留呼吸 */
-.branch-ring{height:clamp(210px,31vh,320px)}
+.branch-ring{height:clamp(240px,35vh,360px)}
 .branch-slide .ring-card{--cw:200px;--ch:150px}
 .branch-slide .ring-hint{margin-top:clamp(6px,1vh,10px)}
 
 /* 分支屏矮屏压缩：只收高度，不动结构 */
 @media(max-height:900px){
   .branch-slide .sec-head p:not(.sec-num){display:none}
-  .branch-ring{height:clamp(190px,28vh,270px)}
+  .branch-ring{height:clamp(215px,32vh,310px)}
 }
 @media(max-height:820px){
-  .branch-ring{height:clamp(170px,26vh,240px)}
+  .branch-ring{height:clamp(190px,30vh,275px)}
 }
 @media(max-height:680px){
-  .branch-ring{height:clamp(150px,24vh,210px)}
+  .branch-ring{height:clamp(165px,28vh,240px)}
   .branch-slide .sec-head{margin-bottom:8px}
 }
 @media(max-width:560px){
@@ -2396,7 +2396,9 @@ body > .branch-back-fab.bb-parked{display:flex}
    ========================================================== */
 .ring{
   position:relative;
-  height:clamp(210px,30vh,320px);
+  /* 高度给足：perspective 1100px 会把正面卡投影放大约 1.5 倍，
+     容器太矮卡会被裁底边。clamp 上限提到 380px。 */
+  height:clamp(240px,36vh,380px);
   margin-top:4px;
   border-radius:26px;
   overflow:hidden;
@@ -2405,7 +2407,10 @@ body > .branch-back-fab.bb-parked{display:flex}
   user-select:none;
   -webkit-user-select:none;
   outline:none;
-  perspective:2400px;
+  /* perspective 越小 → 近大远小越夸张 → 立体感越强。
+     之前用 2400px 太长了，几乎等于没有透视，卡片看起来像平铺的贴纸。
+     1100px 配合 ±42° 斜转，才能明显看出"卡片绕着一根轴在转"。 */
+  perspective:1100px;
   perspective-origin:50% 50%;   /* 原点放正中：远处卡不会向上漂，避免和前排错排重叠 */
   background:
     radial-gradient(ellipse 62% 55% at 26% 30%, rgba(255,185,154,.16), transparent 62%),
@@ -2437,7 +2442,8 @@ body > .branch-back-fab.bb-parked{display:flex}
   border-radius:20px;overflow:hidden;
   border:1px solid var(--glass-line);
   background:var(--glass-solid);
-  box-shadow:0 26px 54px -26px rgba(70,52,100,.6);
+  /* 阴影由 JS 按景深动态写入 --f-shadow：前排悬浮感强，后排贴近背景 */
+  box-shadow:var(--f-shadow, 0 26px 54px -26px rgba(70,52,100,.6));
   display:flex;flex-direction:column;
   align-items:center;justify-content:center;
   gap:9px;text-align:center;padding:14px;
@@ -6822,6 +6828,9 @@ window.createRing = function(opts){
   /* ---------- 几何：角度 → 位移 ---------- */
   const rad = d => d * Math.PI / 180;
   let cw = 260, ch = 195, R = 400;
+  /* 与 CSS 的 perspective 保持一致：place() 要按它反推正面卡的最大缩放 */
+  const PERS = 1100;
+  let chBase = 195;   /* 未缩放的卡高（measure 里更新），用于算透视放大后是否装得下 */
 
   /* 设计宽度只读一次并缓存到 dataset。
      ⚠️ 不能每次 measure 都去 getComputedStyle ——
@@ -6859,6 +6868,7 @@ window.createRing = function(opts){
     const outerCap = (W * allow) / (0.8 / SIN + 0.5);
     cw = Math.max(96, Math.min(WISH, narrow ? 170 : 200, Math.max(outerCap, 96)));
     ch = Math.round(cw * 0.75);
+    chBase = ch;    /* 供 place() 反推正面卡最大缩放 */
     R  = Math.max(0.8 * cw / SIN, cw * 0.9);
 
     cards.forEach(c => {
@@ -6888,15 +6898,20 @@ window.createRing = function(opts){
        于是正面卡端正、两侧卡明显斜过去有厚度感、远处的卡适度侧转，
        而任何一张卡都保留 85% 以上的可视宽度，图/视频始终看得清。 */
     const LIFT     = narrow ? 26 : 40;   // 竖向错位幅度
-    const TILT_MAX = 32;                 // 斜转封顶角（度）
+    const TILT_MAX = 42;                 // 斜转封顶角（度）：越大立体感越强，超过 50° 卡片就太扁
     cards.forEach((el, i) => {
       const a  = a0 + rad(i * STEP);
       const z  = Math.cos(a) * R;
       const x  = Math.sin(a) * R;
       const t  = (z + R) / (2 * R);              // 0 = 最远，1 = 最近
       const y  = (1 - t) * -LIFT;                /* 越远越往上飘 */
-      const sc = 0.78 + t * 0.24;                /* 景深：后排明显更小 */
-      const op = 0.34 + t * 0.66;
+      /* 景深缩放。正面卡会被 perspective 放大约 1.5 倍，
+         所以这里按容器高度反推一个上限，保证放大后仍装得进容器（不被裁底边）。 */
+      const perspBoost = PERS / (PERS - R);                 // 正面卡的透视放大倍数
+      const maxFront   = (ring.clientHeight - LIFT - 12) / (perspBoost * chBase);
+      const scFront    = Math.min(1.06, Math.max(0.8, maxFront));
+      const sc  = (scFront - 0.40) + t * 0.40;              /* 前排 = scFront，后排 = scFront-0.4 */
+      const op = 0.26 + t * 0.74;
       /* 斜转角 = 方位角，但夹在 ±TILT_MAX 内（sin 取符号，保证左右对称） */
       const s  = Math.sin(a);
       const ry = -Math.sign(s) * Math.min(Math.abs(s), 1) * TILT_MAX;
@@ -6906,6 +6921,11 @@ window.createRing = function(opts){
         'scale(' + sc.toFixed(4) + ')';
       el.style.opacity = op.toFixed(3);
       el.style.zIndex  = String(Math.round(1000 + z));
+      /* 阴影随景深变化：前排悬浮感强（大而散的投影），后排贴近背景 → 立体层次 */
+      const fy = Math.round(14 + t * 34);
+      const fb = Math.round(22 + t * 26);
+      el.style.setProperty('--f-shadow', fy + 'px ' + fb + 'px ' +
+        (-Math.round(14 + t * 22)) + 'px rgba(60,44,92,' + (0.14 + t * 0.30).toFixed(2) + ')');
       el.style.filter  = t < 0.42 ? 'blur(' + ((0.42 - t) * 3.5).toFixed(2) + 'px)' : 'none';
       el.style.pointerEvents = t > 0.5 ? 'auto' : 'none';
       el.setAttribute('aria-hidden', t > 0.5 ? 'false' : 'true');
