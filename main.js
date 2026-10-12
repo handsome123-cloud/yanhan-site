@@ -4534,7 +4534,7 @@ window.createRing = function(opts){
   /* ---------- ②③④ 三个分支相册 ---------- */
   const BRANCH = {
     'ring-faces': {
-      files: ['pt-1.jpg','pt-2.jpg','pt-3.jpg','pt-4.jpg','pt-wei.jpg',
+      files: ['pt-1.jpg','pt-2.jpg','pt-3.jpg','pt-4.jpg','pt-wei.jpg?v=2',
               'pt-pingpang.jpg','pt-mama.jpg','pt-kid.jpg'],
       titles: ['我们仨 · 笑得最傻的一张','风把头发吹乱了，正好','站在湖边，什么都刚刚好',
                '镜头举起来的那一刻','伟哥 · 胡子是这两年长的','球台前 · 谁也没赢',
