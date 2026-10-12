@@ -2265,12 +2265,22 @@ body > .branch-back-fab.bb-parked{display:flex}
   box-shadow:0 0 13px 3px rgba(255,210,130,.7);
 }
 .star.pub:hover,.star.pub:focus-visible{box-shadow:0 0 24px 8px rgba(255,216,140,.95)}
-@keyframes starTwinkle{
-  0%,100%{opacity:.72}
-  50%{opacity:1}
+/* 访客留的星 = 暖橙色 + 稍大一圈：站长一眼看出「有人来过」 */
+.star.guest{
+  width:9px;height:9px;
+  background:radial-gradient(circle at 35% 35%, #fff, #ffc59a 45%, transparent 72%);
+  box-shadow:0 0 12px 3px rgba(255,175,130,.72);
+  animation:starTwinkleGuest 3s ease-in-out infinite;
+}
+.star.guest:hover,.star.guest:focus-visible{
+  box-shadow:0 0 24px 8px rgba(255,180,136,.92);
+}
+@keyframes starTwinkleGuest{
+  0%,100%{opacity:.8;transform:translate(-50%,-50%) scale(.94)}
+  50%{opacity:1;transform:translate(-50%,-50%) scale(1.08)}
 }
 @media (prefers-reduced-motion: reduce){
-  .star{animation:none;opacity:.92}
+  .star,.star.guest{animation:none;opacity:.92}
 }
 
 /* ---- 星星详情弹层 ---- */
@@ -2395,8 +2405,8 @@ body > .branch-back-fab.bb-parked{display:flex}
   user-select:none;
   -webkit-user-select:none;
   outline:none;
-  perspective:1400px;
-  perspective-origin:50% 42%;
+  perspective:2400px;
+  perspective-origin:50% 50%;   /* 原点放正中：远处卡不会向上漂，避免和前排错排重叠 */
   background:
     radial-gradient(ellipse 62% 55% at 26% 30%, rgba(255,185,154,.16), transparent 62%),
     radial-gradient(ellipse 58% 52% at 76% 70%, rgba(143,201,240,.16), transparent 62%),
@@ -3421,8 +3431,8 @@ body > .branch-back-fab.bb-parked{display:flex}
       <div class="star-sky reveal" id="starSky" aria-label="留言星空"></div>
       <p class="star-hint" id="starHint">— 还没有星星，等你点亮第一颗 —</p>
 
-      <!-- 留言输入（本人可见，访客只读） -->
-      <div class="gb-form owner-only" id="gbForm">
+      <!-- 留言输入：所有人都能写（访客也能点一颗星） -->
+      <div class="gb-form" id="gbForm">
         <input class="gb-name" id="gbName" type="text" maxlength="16" placeholder="你的名字">
         <input class="gb-msg" id="gbMsg" type="text" maxlength="120" placeholder="写点什么…">
         <button class="gb-send magnetic" id="gbSend" type="button">点亮一颗星</button>
@@ -3547,21 +3557,40 @@ body > .branch-back-fab.bb-parked{display:flex}
 
 /* ==========================================================
    -1. 身份判定（必须最先求值）
-   本机首次打开 → 站长本人（可写、可删、可封存）
-   陌生设备打开 → 访客（只读，只看星空）
+   站长本人：网址带 ?owner=1 打开（会被本机记住，之后可直接进）
+   其他人  ：一律访客 —— 能看星空、能留言、能封存时间胶囊，
+             但看不到删除键 / 编辑键 / 清空 / 备份工具
    ⚠️ 时间胶囊的 IIFE 在留言板之前执行，所以身份必须在这里
       一次性求值并挂到 window，不能各自判断（否则读到 undefined）。
+   ⚠️ 绝不能用「首次访问 = 本人」：那样每个陌生设备第一次打开
+      都会拿到站长权限，访客会看到管理界面，站长也分不清谁是谁。
    ========================================================== */
 window.__IS_OWNER = (function(){
   try {
     const k = 'yh_owner';
+
+    /* ① 网址带 ?owner=1 → 认作站长，并记住；?owner=0 → 退出站长模式 */
+    let q = '';
+    try { q = new URLSearchParams(location.search).get('owner') || ''; } catch(e){}
+    if (q === '1'){ localStorage.setItem(k, 'owner'); return true; }
+    if (q === '0'){ localStorage.setItem(k, 'guest'); return false; }
+
+    /* ② 否则看本机记忆 */
     const v = localStorage.getItem(k);
     if (v === 'owner') return true;
-    if (v === 'guest') return false;
-    localStorage.setItem(k, 'owner');   // 首次访问：默认这是颜涵自己的浏览器
-    return true;
-  } catch(e){ return true; }
+
+    /* ③ 默认访客（不再自动授予站长权限） */
+    localStorage.setItem(k, 'guest');
+    return false;
+  } catch(e){ return false; }
 })();
+
+/* 供调试：地址栏加 ?owner=1 / ?owner=0，或在控制台调用
+   window.__setOwner(true) / window.__setOwner(false) 切换身份 */
+window.__setOwner = function(on){
+  try { localStorage.setItem('yh_owner', on ? 'owner' : 'guest'); } catch(e){}
+  location.href = location.pathname + (on ? '?owner=1' : '?owner=0');
+};
 
 /* ==========================================================
    0. 明暗主题（自由切换 + 本地记忆）
@@ -5649,9 +5678,11 @@ document.querySelectorAll('.flip').forEach(card => {  card.addEventListener('cli
     openedEl.hidden = true;
 
     if (!data){
-      // 访客不给写信入口
-      writeEl.hidden = !IS_OWNER;
-      if (publicWrap) publicWrap.hidden = !IS_OWNER;
+      /* 访客也能封存自己的信 —— 他的信只存在他自己的浏览器里
+         （除非他勾了「生日公开」，那才会以别人的名义上云）。
+         所以这里不再按身份隐藏写信区。 */
+      writeEl.hidden = false;
+      if (publicWrap) publicWrap.hidden = false;
       // 回填公开开关（新写时默认关闭）
       if (publicEl) publicEl.checked = false;
       return;
@@ -5691,16 +5722,22 @@ document.querySelectorAll('.flip').forEach(card => {  card.addEventListener('cli
       }
       const wantPublic = !!(publicEl && publicEl.checked);
       const at = Date.now();
-      save({ text: v, at, public: wantPublic });
+      /* 访客写的信也存本机；勾了公开才上云，并带上 by/name，
+         这样星空里能分清是谁封存的。 */
+      const by = IS_OWNER ? 'owner' : 'guest';
+      const nm = IS_OWNER ? '颜涵' : ((document.getElementById('gbName')?.value || '').trim() || '一位朋友');
+      save({ text: v, at, public: wantPublic, by, name: nm });
       render();
 
       // 勾了"生日公开"才上云；不上云就纯本机，别人永远看不到
       if (wantPublic && capsuleOn()){
-        const ok = await cloudPushCapsule({ text: v, at, public: true });
+        const ok = await cloudPushCapsule({ text: v, at, public: true, by, name: nm });
         const el = document.getElementById('gbCloud');
         if (el) {
           el.textContent = ok
-            ? '✓ 已封存，并会在生日那天让大家看到'
+            ? (IS_OWNER
+                ? '✓ 已封存，并会在生日那天让大家看到'
+                : '✓ 已封存，生日那天它会挂在这片星空上')
             : '已封存本机（云端没连上，生日公开可能不生效）';
           el.dataset.state = ok ? 'ok' : 'warn';
         }
@@ -6099,7 +6136,7 @@ document.querySelectorAll('.flip').forEach(card => {  card.addEventListener('cli
       );
       if (!r.ok) throw new Error('HTTP ' + r.status);
       const arr = await r.json();
-      return arr.map(it => ({ name: it.name, msg: it.msg, ts: it.ts }));
+      return arr.map(it => ({ name: it.name, msg: it.msg, ts: it.ts, by: it.by || 'owner' }));
     } catch(e){
       console.warn('[guestbook] 云端读取失败，回落到本地', e);
       return null;
@@ -6194,7 +6231,7 @@ document.querySelectorAll('.flip').forEach(card => {  card.addEventListener('cli
       const k = m.ts + '|' + (m.msg || '');
       if (seen.has(k)) return;
       seen.add(k);
-      out.push({ name: m.name, msg: m.msg, ts: m.ts });
+      out.push({ name: m.name, msg: m.msg, ts: m.ts, by: m.by || 'owner' });
     });
     out.sort((a,b) => a.ts - b.ts);   // 保持时间升序，paint 里再倒序展示
     return out;
@@ -6229,13 +6266,20 @@ document.querySelectorAll('.flip').forEach(card => {  card.addEventListener('cli
 
     arr.forEach(it => {
       const s = document.createElement('button');
-      s.className = 'star' + (it.public ? ' pub' : '');
+      /* 星星分三种：
+         .star         站长自己的（暖色）
+         .star.guest   别人留的（冷色，一眼能看出「有人在」）
+         .star.pub     生日公开信（金色，最大）
+         注意：pub 的优先级最高，所以放在最后 */
+      s.className = 'star' +
+        (it.by === 'guest' ? ' guest' : '') +
+        (it.public ? ' pub' : '');
       s.type = 'button';
       const h = hash((it.name || '') + it.ts + (it.msg || '').slice(0, 8));
       s.style.left = (9 + (h % 82)) + '%';
       s.style.top  = (8 + ((h >> 9) % 58)) + '%';   // 纵向限制在 8%~66%，避开右下角翻页控件
       s.style.animationDelay = ((h >> 5) % 36) / 10 + 's';
-      s.title = (it.name || '匿名') + ' 的留言';
+      s.title = (it.name || '匿名') + (it.by === 'guest' ? '（来访的朋友）' : '') + ' 的留言';
       s.setAttribute('aria-label', '读 ' + (it.name || '匿名') + ' 的留言');
       s.addEventListener('click', () => openStar(it));
       sky.appendChild(s);
@@ -6246,10 +6290,11 @@ document.querySelectorAll('.flip').forEach(card => {  card.addEventListener('cli
   let opened = null;
   function openStar(it){
     opened = it;
-    if (mWho)  mWho.textContent  = it.name || '匿名';
+    if (mWho)  mWho.textContent  = (it.name || '匿名') +
+      (it.by === 'guest' ? ' · 来访的朋友' : '');
     if (mWhat) mWhat.textContent = it.msg;
     if (mWhen) mWhen.textContent = fmt(it.ts) + (it.public ? ' · 公开信' : '');
-    if (mDel)  mDel.hidden = !IS_OWNER;      // 访客看不到删除入口
+    if (mDel)  mDel.hidden = !IS_OWNER;      // 只有站长能删，访客看不到删除入口
     if (modal) modal.classList.add('show');
     if (mClose) mClose.focus({ preventScroll: true });
   }
@@ -6368,17 +6413,21 @@ document.querySelectorAll('.flip').forEach(card => {  card.addEventListener('cli
       if (!Array.isArray(arr) || !arr.length) return;
 
       arr.filter(it => it.public && birthdayReached(it.at)).forEach((it, i) => {
+        /* by: 'owner' = 站长封存的；其它 = 来访朋友封存的。
+           文案要分开，不能一律写成「颜涵封存的一封信」。 */
+        const isMine = (it.by || 'owner') === 'owner';
+        const who = isMine ? '颜涵' : (it.name || '一位朋友');
         const s = document.createElement('button');
-        s.className = 'star pub';
+        s.className = 'star pub' + (isMine ? '' : ' guest');
         s.type = 'button';
         const h = hash('capsule' + it.at);
         s.style.left = (12 + (h % 76)) + '%';
         s.style.top  = (14 + ((h >> 7) % 66)) + '%';
         s.style.animationDelay = (i * 0.4) + 's';
-        s.title = '颜涵封存的一封信';
-        s.setAttribute('aria-label', '读颜涵封存的信');
+        s.title = who + ' 封存的一封信';
+        s.setAttribute('aria-label', '读 ' + who + ' 封存的信');
         s.addEventListener('click', () => {
-          if (mWho)  mWho.textContent  = '颜涵 · 封存于生日前';
+          if (mWho)  mWho.textContent  = who + ' · 封存于生日前';
           if (mWhat) mWhat.textContent = it.text || '';
           if (mWhen) mWhen.textContent = '在 ' + fmt(it.at) + ' 写下的';
           if (mDel)  mDel.hidden = true;
@@ -6390,14 +6439,15 @@ document.querySelectorAll('.flip').forEach(card => {  card.addEventListener('cli
     } catch(e){ /* 静默：表不存在或网络问题都不该影响页面 */ }
   }
 
-  /* ---------- 提交 ---------- */
+  /* ---------- 提交（所有人都能写，访客的留言会带 by 标记） ---------- */
   async function submit(){
-    if (!IS_OWNER) return;                     // 访客只读，不写
-    const name = (nameI.value || '').trim() || '匿名';
+    const name = (nameI.value || '').trim() || (IS_OWNER ? '颜涵' : '匿名');
     const msg  = (msgI.value || '').trim();
     if (!msg) { msgI.focus(); return; }
 
-    const item = { name, msg, ts: Date.now() };
+    /* by: 'owner' = 站长自己写的；'guest' = 访客写的。
+       站长在星空中一眼就能分清哪些是别人留的。 */
+    const item = { name, msg, ts: Date.now(), by: IS_OWNER ? 'owner' : 'guest' };
 
     // 先本地落盘，保证"绝不丢"
     const arr = load();
@@ -6414,7 +6464,9 @@ document.querySelectorAll('.flip').forEach(card => {  card.addEventListener('cli
     if (cloudOn()) {
       const ok = await cloudPush(item);
       if (ok) {
-        cloudEl.textContent = '✓ 已同步到云端，换设备也看得到';
+        cloudEl.textContent = IS_OWNER
+          ? '✓ 已同步到云端，换设备也看得到'
+          : '✓ 这颗星已经挂上去了，谢谢你';
         cloudEl.dataset.state = 'ok';
       } else {
         cloudEl.textContent = '已存本机（云端暂时没连上，稍后会重试）';
@@ -6684,10 +6736,12 @@ window.createRing = function(opts){
   if (!N) return null;
 
   /* 相邻卡片角度步长。
-     窄屏：让环闭合成整圆（360/N），正面大卡 + 两侧露出边缘（coverflow 观感）；
-     宽屏：用不满一圈的弧，卡片更舒展。 */
+     ⚠️ 桌面端原本是「不满一圈的弧」（26°/30°），8 张卡只铺 208°，
+     投影后全堆在屏幕一侧、互相压 150px，观感就是"糊成一团"。
+     现在统一闭合成整圆（360/N），卡片均匀绕环分布，前后景深自然错开，
+     既不会挤，也真正看得出"这是一个环"。 */
   const narrow = matchMedia('(max-width: 560px)').matches;
-  const STEP = opts.step || (narrow ? Math.round(360 / N) : N <= 6 ? 30 : 26);
+  const STEP = opts.step || Math.round(360 / N);
   /* 自转速度用「度/秒」而不是「度/帧」——
      这样 60Hz、120Hz、以及被节流的后台标签页里转速都一致 */
   const AUTO_DPS = REDUCE ? 0 : 12;   // 12 度/秒 ≈ 30 秒转一圈，肉眼可见
@@ -6778,15 +6832,22 @@ window.createRing = function(opts){
     const W = Math.max(240, ring.clientWidth);
     const SIN = Math.sin(rad(STEP / 2));
 
-    /* 卡片宽度以「设计宽度」为基准（CSS 断点决定，已缓存），夹两条线：
-       ① 不超过 260px
-       ② 让环外沿（R + cw/2）大致装进容器 —— 由 R=(cw+18)/(2·sin) 反推上限。
-          窄屏整圆时允许两侧卡略出框（它们本就在屏幕边缘之外，被裁掉无妨）。 */
-    const allow = narrow ? 0.80 : 0.54;
-    const outerCap = (W * allow - 9 / SIN) / (0.5 + 1 / (2 * SIN));
-    cw = Math.max(120, Math.min(WISH, 260, Math.max(outerCap, 120)));
+    /* 卡片宽度与半径 —— 一次性闭式解，不递归依赖 cw（否则会越缩越小）。
+       推导：整圆布点时两张相邻卡的弧向净空 GAP，需要
+             2·R·sin(STEP/2) ≥ cw + GAP          （弧长要装得下卡宽+间隙）
+       取 GAP = 0.6·cw（相邻卡之间留 0.6 个卡宽的空档），代入得
+             R = 1.6·cw / (2·sin(STEP/2)) = 0.8·cw / sin(STEP/2)
+       再把环外沿 R + cw/2 压进容器宽度 W·allow：
+             cw · (0.8/SIN + 0.5) ≤ W·allow
+             ⇒ cw ≤ W·allow / (0.8/SIN + 0.5)
+       8 张卡时 SIN=sin22.5°=0.383 → 系数 ≈ 2.59，卡片占容器约 1/2.6，
+       于是 R ≈ 2.1·cw，45° 与 90° 位置的横向投影差 ≈ 0.29R ≈ 0.6·cw，
+       比半个卡宽大，前后排就不会糊在一起。 */
+    const allow = narrow ? 0.86 : 0.90;
+    const outerCap = (W * allow) / (0.8 / SIN + 0.5);
+    cw = Math.max(96, Math.min(WISH, narrow ? 170 : 200, Math.max(outerCap, 96)));
     ch = Math.round(cw * 0.75);
-    R  = Math.max((cw + 18) / (2 * SIN), cw * 0.75);
+    R  = Math.max(0.8 * cw / SIN, cw * 0.9);
 
     cards.forEach(c => {
       c.style.setProperty('--cw', cw + 'px');
@@ -6805,19 +6866,26 @@ window.createRing = function(opts){
 
   function place(){
     const a0 = rad(angle);
+    /* 后排卡片在屏幕上必然和前排横向交叠（3D 环的固有投影）。
+       解决办法不是消除重叠，而是把它变成"明显的层次"：
+       ① 后排整体上移、前排整体下沉 → 竖向错开，不再糊成一坨
+       ② 后排明显缩小、变淡、加模糊 → 一眼看出它在远处
+       ③ 前排卡加投影，压在后面的卡上 → 前后关系清楚 */
+    const LIFT = narrow ? 26 : 40;   // 竖向错位幅度
     cards.forEach((el, i) => {
       const a  = a0 + rad(i * STEP);
       const z  = Math.cos(a) * R;
       const x  = Math.sin(a) * R;
       const t  = (z + R) / (2 * R);              // 0 = 最远，1 = 最近
-      const sc = 0.76 + t * 0.26;
-      const op = 0.34 + t * 0.66;
+      const y  = (1 - t) * -LIFT;                /* 越远越往上飘 */
+      const sc = 0.68 + t * 0.34;                /* 景深拉开：后排明显更小 */
+      const op = 0.30 + t * 0.70;
       el.style.transform =
-        'translate3d(' + x.toFixed(2) + 'px, 0, ' + z.toFixed(2) + 'px) ' +
+        'translate3d(' + x.toFixed(2) + 'px, ' + y.toFixed(2) + 'px, ' + z.toFixed(2) + 'px) ' +
         'scale(' + sc.toFixed(4) + ')';
       el.style.opacity = op.toFixed(3);
       el.style.zIndex  = String(Math.round(1000 + z));
-      el.style.filter  = t < 0.34 ? 'blur(' + ((0.34 - t) * 5).toFixed(2) + 'px)' : 'none';
+      el.style.filter  = t < 0.42 ? 'blur(' + ((0.42 - t) * 4.5).toFixed(2) + 'px)' : 'none';
       el.style.pointerEvents = t > 0.55 ? 'auto' : 'none';
       el.setAttribute('aria-hidden', t > 0.55 ? 'false' : 'true');
     });
