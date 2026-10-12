@@ -372,9 +372,9 @@
             <span class="branch-go">进去看看 →</span>
           </button>
           <button class="branch-card b-food" type="button" data-jump="s4b">
-            <span class="branch-ico">◎</span>
-            <span class="branch-name">美食</span>
-            <span class="branch-desc">吃过就忘不掉</span>
+            <span class="branch-ico">☺</span>
+            <span class="branch-name">人像</span>
+            <span class="branch-desc">一张张熟悉的脸</span>
             <span class="branch-go">进去看看 →</span>
           </button>
           <button class="branch-card b-daily" type="button" data-jump="s4c">
@@ -388,7 +388,7 @@
     </div>
   </section>
 
-  <!-- 第 4A 屏 · 旅游生活相册（分支） -->
+  <!-- 第 4A 屏 · 旅游生活相册（分支 · 分地域折叠） -->
   <section class="slide branch-slide" id="s4a" data-label="旅游生活">
     <div class="wrap">
       <button class="branch-back" type="button" data-back="s4">
@@ -398,44 +398,92 @@
       <div class="sec-head reveal">
         <p class="sec-num">04A / TRAVEL</p>
         <h2>旅游生活</h2>
-        <p>走过的山与路 · 相册待你补满</p>
+        <p>一个城市一个抽屉 · 点开哪座，就逛哪座</p>
       </div>
 
-      <div class="ring branch-ring reveal" id="ring-travel" tabindex="0" role="group"
-           aria-roledescription="3D 环形轮播" aria-label="旅游生活相册">
-        <div class="ring-core" aria-hidden="true"></div>
-        <div class="ring-stage"></div>
-        <div class="ring-halo" aria-hidden="true"></div>
-        <button class="ring-nav ring-prev" type="button" aria-label="上一张">‹</button>
-        <button class="ring-nav ring-next" type="button" aria-label="下一张">›</button>
+      <!-- 分地域折叠：点开一个地点，照片视频都在里面 -->
+      <div class="geo-accs reveal">
+        <details class="geo-acc" open>
+          <summary class="geo-head">
+            <span class="geo-tag">湘</span>
+            <span class="geo-name">长沙</span>
+            <span class="geo-sub">橘子洲的风 · 岳麓山的路</span>
+            <span class="geo-arrow">▾</span>
+          </summary>
+          <div class="geo-grid">
+            <figure><img src="assets/cs-1.jpg" alt="长沙青年艺术雕像" loading="lazy"><figcaption>青年艺术雕像 · 目光穿过一百年</figcaption></figure>
+            <figure><img src="assets/cs-2.jpg" alt="湖南大学" loading="lazy"><figcaption>湖南大学 · 没有围墙的大学</figcaption></figure>
+            <figure><img src="assets/cs-3.jpg" alt="古麓山寺" loading="lazy"><figcaption>古麓山寺 · 湖湘第一道场</figcaption></figure>
+            <figure><img src="assets/cs-4.jpg" alt="想你和你 在长沙见一面" loading="lazy"><figcaption>想和你，在长沙见一面</figcaption></figure>
+            <figure><img src="assets/cs-5.jpg" alt="抗战中的湖南人展览" loading="lazy"><figcaption>一盏灯的展览 · 抗战中的湖南人</figcaption></figure>
+          </div>
+        </details>
+
+        <details class="geo-acc">
+          <summary class="geo-head">
+            <span class="geo-tag">舟</span>
+            <span class="geo-name">舟山</span>
+            <span class="geo-sub">海岛的杨梅熟了</span>
+            <span class="geo-arrow">▾</span>
+          </summary>
+          <div class="geo-grid">
+            <figure><img src="assets/zs-1.jpg" alt="舟山水乡" loading="lazy"><figcaption>白墙上的「舟山」两个字</figcaption></figure>
+            <figure><img src="assets/zs-2.jpg" alt="枝头杨梅" loading="lazy"><figcaption>雨后的杨梅 · 红得发亮</figcaption></figure>
+            <figure><img src="assets/zs-3.jpg" alt="摘杨梅" loading="lazy"><figcaption>伸手够到的那颗最甜</figcaption></figure>
+          </div>
+        </details>
+
+        <details class="geo-acc">
+          <summary class="geo-head">
+            <span class="geo-tag">甬</span>
+            <span class="geo-name">宁波</span>
+            <span class="geo-sub">老街、灯笼和江水</span>
+            <span class="geo-arrow">▾</span>
+          </summary>
+          <div class="geo-grid">
+            <figure><img src="assets/nb-1.jpg" alt="南塘老街" loading="lazy"><figcaption>南塘老街 · 一排红灯笼</figcaption></figure>
+            <figure><img src="assets/nb-2.jpg" alt="宁波老街" loading="lazy"><figcaption>老街的午后 · 石板路发亮</figcaption></figure>
+            <figure><img src="assets/nb-3.jpg" alt="宁波江边廊桥" loading="lazy"><figcaption>江边的廊桥 · 倒影比房子好看</figcaption></figure>
+            <figure><img src="assets/nb-4.jpg" alt="宁波 City Walk 墙" loading="lazy"><figcaption>「寧波」City Walk 打卡墙</figcaption></figure>
+            <figure><img src="assets/nb-5.jpg" alt="麒麟照壁" loading="lazy"><figcaption>石头刻的麒麟 · 踏云而来</figcaption></figure>
+          </div>
+        </details>
+
+        <details class="geo-acc">
+          <summary class="geo-head">
+            <span class="geo-tag">苏</span>
+            <span class="geo-name">苏州</span>
+            <span class="geo-sub">知道你会来 所以我等</span>
+            <span class="geo-arrow">▾</span>
+          </summary>
+          <div class="geo-grid">
+            <figure><img src="assets/sz-1.jpg" alt="苏州大学路牌" loading="lazy"><figcaption>苏州大学的路牌 · 每条路都有故事</figcaption></figure>
+            <figure><img src="assets/sz-2.jpg" alt="知道你会来所以我等" loading="lazy"><figcaption>知道你会来，所以我等</figcaption></figure>
+            <figure><img src="assets/sz-3.jpg" alt="苏式灯笼" loading="lazy"><figcaption>屋檐下的苏式灯笼</figcaption></figure>
+          </div>
+        </details>
       </div>
 
-      <div class="ring-bar reveal">
-        <button class="ring-play" type="button" aria-label="暂停自动旋转">❚❚</button>
-        <div class="ring-dots"></div>
-        <span class="ring-cap">01 / 06</span>
-      </div>
-
-      <p class="ring-hint reveal">← 按住拖动转一圈 · 也可以点箭头或圆点</p>
+      <p class="ring-hint reveal">点一个城市，抽屉就拉开了 · 再点一下收回去</p>
 
     </div>
   </section>
 
-  <!-- 第 4B 屏 · 美食相册（分支） -->
-  <section class="slide branch-slide" id="s4b" data-label="美食">
+  <!-- 第 4B 屏 · 人像相册（分支） -->
+  <section class="slide branch-slide" id="s4b" data-label="人像">
     <div class="wrap">
       <button class="branch-back" type="button" data-back="s4">
         <span class="bb-arrow">←</span> 回到影像记忆
       </button>
       <button class="branch-back-fab" type="button" data-back="s4" aria-label="返回影像记忆" title="返回">↩</button>
       <div class="sec-head reveal">
-        <p class="sec-num">04B / TASTE</p>
-        <h2>美食</h2>
-        <p>吃过就忘不掉 · 味觉比照片记得更久</p>
+        <p class="sec-num">04B / FACES</p>
+        <h2>人像</h2>
+        <p>一张张熟悉的脸 · 每张都藏着一段日子</p>
       </div>
 
-      <div class="ring branch-ring reveal" id="ring-food" tabindex="0" role="group"
-           aria-roledescription="3D 环形轮播" aria-label="美食相册">
+      <div class="ring branch-ring reveal" id="ring-faces" tabindex="0" role="group"
+           aria-roledescription="3D 环形轮播" aria-label="人像相册">
         <div class="ring-core" aria-hidden="true"></div>
         <div class="ring-stage"></div>
         <div class="ring-halo" aria-hidden="true"></div>
@@ -464,7 +512,7 @@
       <div class="sec-head reveal">
         <p class="sec-num">04C / DAILY</p>
         <h2>日常碎片</h2>
-        <p>没什么大事的日子，事后想起来最好</p>
+        <p>没什么大事的日子 · 事后想起来最好</p>
       </div>
 
       <div class="ring branch-ring reveal" id="ring-daily" tabindex="0" role="group"
@@ -505,8 +553,9 @@
 
         <div class="glass them-item reveal tilt">
           <div class="them-avatar c2">他</div>
-          <h3>扉哥</h3>
-          <p>传奇的人生，未知的结局。故事讲到这里还没有收尾——正因为不知道下一章写什么，才更想一直追下去。</p>
+          <img class="them-photo" src="assets/pt-wei.jpg" alt="伟哥" loading="lazy">
+          <h3>伟哥</h3>
+          <p>传奇的人生，未知的结局。胡子留得比故事还长，笑起来却还是很傻——故事讲到这里还没有收尾，正因为不知道下一章写什么，才更想一直追下去。</p>
         </div>
 
         <div class="glass them-item reveal tilt">
@@ -675,6 +724,10 @@
 
         <div class="contact-links" style="margin-bottom:8px">
           <a class="clink magnetic" href="tencent://message/?uin=3264245835"><span class="dot"></span>QQ：3264245835</a>
+          <button class="clink magnetic" id="wxCopy" type="button" title="点击复制微信号">
+            <span class="dot wx"></span>微信：petrichor_love520
+            <em class="wx-tip" id="wxTip">复制</em>
+          </button>
         </div>
 
         <p class="thanks-line">如果你也有一段想回去的时光，欢迎来找我聊聊。</p>
