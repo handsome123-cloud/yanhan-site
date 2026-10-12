@@ -4378,46 +4378,98 @@ window.createRing = function(opts){
       PHOTO(1, 'ring1.jpg'),
       PHOTO(2, 'ring2.jpg'),
       VIDEO('video1.mp4', '美姿令人着迷的邵某人'),
+      VIDEO('video3.mp4', '第三段回忆'),
       PHOTO(3, 'ring3.jpg'),
-      PHOTO(4, 'ring4.jpg'),
       VIDEO('video2.mp4', '第二段回忆'),
-      PHOTO(5, 'ring5.jpg'),
-      PHOTO(6, 'ring6.jpg')
+      VIDEO('video4.mp4', '第四段回忆'),
+      PHOTO(4, 'ring4.jpg')
     ]
   });
 
   /* ---------- ②③④ 三个分支相册 ---------- */
   const BRANCH = {
-    'ring-travel': {
-      files: ['travel1.jpg','travel2.jpg','travel3.jpg','travel4.jpg','travel5.jpg','travel6.jpg'],
-      titles: ['泰山 · 与文人共游','待补 · 下一段旅程','待补 · 海边的夏天',
-               '待补 · 城市一夜','待补 · 某次远行','待补 · 一个清晨'],
-      icons: ['⛰','≋','☼','◇','⌘','⊙']
-    },
-    'ring-food': {
-      files: ['food1.jpg','food2.jpg','food3.jpg','food4.jpg','food5.jpg','food6.jpg'],
-      titles: ['待补 · 第一口惊艳','待补 · 深夜小摊','待补 · 家的味道',
-               '待补 · 一路吃过去','待补 · 甜的','待补 · 冬天那锅'],
-      icons: ['◎','✿','⌂','≈','◍','❄']
+    'ring-faces': {
+      files: ['pt-1.jpg','pt-2.jpg','pt-3.jpg','pt-4.jpg','pt-wei.jpg',
+              'pt-pingpang.jpg','pt-mama.jpg','pt-kid.jpg'],
+      titles: ['我们仨 · 笑得最傻的一张','风把头发吹乱了，正好','站在湖边，什么都刚刚好',
+               '镜头举起来的那一刻','伟哥 · 胡子是这两年长的','球台前 · 谁也没赢',
+               '妈妈 · 长椅上歇一会儿','小时候我就在这种草堆里找四叶草'],
+      subs:  ['2025 · 春天的湖边','2025 · 春天','2025 · 湖边','2025 · 那天很亮',
+              '2025 · 特写','2025 · 球馆','2025 · 长椅','2012 · 童年的草'],
+      icons: ['☺','☺','☺','☺','☺','◎','☺','⊙']
     },
     'ring-daily': {
-      files: ['daily1.jpg','daily2.jpg','daily3.jpg','daily4.jpg','daily5.jpg','daily6.jpg'],
-      titles: ['待补 · 桌上的光','待补 · 路过','待补 · 一个下午',
-               '待补 · 窗外','待补 · 没什么大事','待补 · 随手一拍'],
-      icons: ['✦','◇','☁','⌘','∿','◌']
+      files: ['video5.mp4','video6.mp4','video7.mp4','video1.mp4','video2.mp4','video3.mp4'],
+      titles: ['日常 · 第一段','日常 · 第二段','日常 · 第三段',
+               '美姿令人着迷的邵某人','那天的风','随手拍的几秒'],
+      subs:  ['点击播放','点击播放','点击播放','点击播放','点击播放','点击播放'],
+      icons: ['▶','▶','▶','▶','▶','▶']
     }
   };
 
   Object.keys(BRANCH).forEach(rootId => {
     const cfg = BRANCH[rootId];
+    const isVideo = cfg.files[0].endsWith('.mp4');
     window.createRing({
       root: rootId,
-      items: cfg.files.map((f, i) => ({
-        kind:'photo', ph:true, icon: cfg.icons[i],
-        title: cfg.titles[i],
-        sub: '待补 · assets/' + f,
-        src: 'assets/' + f
-      }))
+      items: cfg.files.map((f, i) => {
+        if (isVideo){
+          return { kind:'video', icon: cfg.icons[i],
+                   title: cfg.titles[i], sub: cfg.subs[i],
+                   src: 'assets/' + f };
+        }
+        return { kind:'photo', ph:false, icon: cfg.icons[i],
+                 title: cfg.titles[i], sub: cfg.subs[i],
+                 src: 'assets/' + f };
+      })
     });
+  });
+})();
+/* ==========================================================
+   末屏 · 微信号一键复制
+   ----------------------------------------------------------
+   微信里长按文字也能复制，但很多人不知道；
+   做成按钮点一下就进剪贴板，顺手给个「已复制」的回执。
+   clipboard API 在 http/file 下可能不可用（需要安全上下文），
+   所以留了 textarea + execCommand 的老办法兜底。
+   ========================================================== */
+(function wxCopy(){
+  const btn = document.getElementById('wxCopy');
+  const tip = document.getElementById('wxTip');
+  if (!btn || !tip) return;
+  const WX = 'petrichor_love520';
+
+  function fallback(text){
+    try {
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      ta.setAttribute('readonly', '');
+      ta.style.cssText = 'position:fixed;left:-9999px;top:0;opacity:0';
+      document.body.appendChild(ta);
+      ta.select();
+      ta.setSelectionRange(0, text.length);
+      const ok = document.execCommand('copy');
+      ta.remove();
+      return ok;
+    } catch(e){ return false; }
+  }
+
+  let t = null;
+  function done(ok){
+    tip.textContent = ok ? '已复制' : WX;
+    btn.classList.toggle('copied', ok);
+    clearTimeout(t);
+    t = setTimeout(() => {
+      tip.textContent = '复制';
+      btn.classList.remove('copied');
+    }, 1900);
+  }
+
+  btn.addEventListener('click', () => {
+    if (navigator.clipboard && navigator.clipboard.writeText){
+      navigator.clipboard.writeText(WX).then(() => done(true), () => done(fallback(WX)));
+    } else {
+      done(fallback(WX));
+    }
   });
 })();
