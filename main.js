@@ -4007,8 +4007,13 @@ window.createRing = function(opts){
       if (!it.ph){
         const img = document.createElement('img');
         img.alt = it.title || '';
-        img.decoding = 'async';
-        /* ⚠️ 这里不能用 loading="lazy"：
+        /* ⚠️ 不能用 decoding='async'：
+           环用 CSS 3D 变换排布卡片，浏览器会认为"当前不需要绘制"，
+           于是异步解码被无限推迟（请求回来了但 naturalWidth 一直是 0，
+           表现就是卡片白板）。环的卡片一次只有 1~2 张在正面，
+           解码开销很小，这里改成同步解码最稳。 */
+        img.decoding = 'sync';
+        /* ⚠️ 也不能用 loading="lazy"：
            环所在的屏（影像记忆主屏 / 三个分支屏）在没翻到之前都是
            visibility:hidden 或 opacity:0 的不可见状态，Chromium 对
            不可见元素内的懒图会一直不加载，等到真正翻过去时还是白板。
