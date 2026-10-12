@@ -390,10 +390,10 @@ html[data-theme="dark"] .motion .ripple-ring{border-color:rgba(180,210,255,.5)}
   .branch-slide .album-tip{display:none}   /* 手机上收起配置说明，节省高度 */
 
   /* 末屏：留言/胶囊/密码卡整体压缩 */
-  #s8 .tc-title{font-size:.9rem}
-  #s8 .gb-title{font-size:.95rem}
-  #s8 .gb-sub{display:none}
-  #s8 .tc-sub{display:none}
+  #s9 .tc-title{font-size:.9rem}
+  #s9 .gb-title{font-size:.95rem}
+  #s9 .gb-sub{display:none}
+  #s9 .tc-sub{display:none}
 }
 
 /* 更矮的手机（SE 一类）：进一步压 */
@@ -1730,18 +1730,18 @@ html[data-theme="dark"] #s7::after{
   #s8 .contact-inner > p{margin-bottom:10px}
   #s8 .contact-links{margin-bottom:4px !important}
   #s8 .thanks-line{margin-top:6px;margin-bottom:10px}
-  #s8 .guestbook{margin-top:9px;padding-top:9px}
-  #s8 .gb-list{max-height:28px}
-  #s8 .time-capsule{margin-top:9px;padding-top:9px}
-  #s8 .tc-input{min-height:34px;padding:7px 11px}
-  #s8 .tc-title{font-size:.88rem}
+  #s9 .guestbook{margin-top:9px;padding-top:9px}
+  #s9 .gb-list{max-height:28px}
+  #s9 .time-capsule{margin-top:9px;padding-top:9px}
+  #s9 .tc-input{min-height:34px;padding:7px 11px}
+  #s9 .tc-title{font-size:.88rem}
   #s8 .contact-inner > p[style]{margin-top:8px !important;padding-top:0}
 }
 @media(max-height:780px){
   #s8{padding-bottom:16px}
-  #s8 .tc-input{min-height:30px}
-  #s8 .gb-list{max-height:22px}
-  #s8 .tc-title{font-size:.84rem}
+  #s9 .tc-input{min-height:30px}
+  #s9 .gb-list{max-height:22px}
+  #s9 .tc-title{font-size:.84rem}
   #s8 .contact-inner > p{margin-bottom:7px}
 }
 @media(max-height:760px){
@@ -1749,13 +1749,18 @@ html[data-theme="dark"] #s7::after{
   #s7 .sec-head{margin-bottom:8px}
 }
 
-/* ---------- 末屏（含时间胶囊）多级压缩 ---------- */
+/* 星空墙画布：矮屏收窄，给下方输入框和胶囊腾出空间 */
+@media(max-height:1000px){
+  .star-sky{height:clamp(160px,24vh,240px)}
+}
+
+/* ---------- 末屏与星空屏多级压缩 ---------- */
 @media(max-height:1000px){
   #s8{padding-bottom:clamp(28px,3.4vh,44px)}
-  #s8 .guestbook{margin-top:22px;padding-top:18px}
-  #s8 .time-capsule{margin-top:24px;padding-top:20px}
-  #s8 .tc-input{min-height:48px}
-  #s8 .gb-list{max-height:110px}
+  #s9 .guestbook{margin-top:22px;padding-top:18px}
+  #s9 .time-capsule{margin-top:24px;padding-top:20px}
+  #s9 .tc-input{min-height:48px}
+  #s9 .gb-list{max-height:110px}
   #s8 .contact-inner > p{margin-bottom:18px}
   #s8 .thanks-line{margin-top:12px}
 }
@@ -1765,18 +1770,18 @@ html[data-theme="dark"] #s7::after{
   #s8 .contact-inner > p{margin-bottom:12px;font-size:.87rem}
   #s8 .thanks-line{margin-top:12px;font-size:.8rem}
   #s8 .contact-inner > p[style]{margin-top:12px !important}
-  #s8 .tc-sub{display:none}
-  #s8 .tc-count{font-size:.64rem}
-  #s8 .tc-actions{margin-top:0}
-  #s8 .guestbook{margin-top:18px;padding-top:15px}
-  #s8 .time-capsule{margin-top:20px;padding-top:16px}
-  #s8 .gb-form{margin-bottom:8px}
-  #s8 .gb-name,#s8 .gb-msg{padding:6px 11px;font-size:.74rem}
-  #s8 .gb-send{padding:6px 15px;font-size:.74rem}
-  #s8 .gb-list{max-height:96px}
-  #s8 .tc-input{min-height:44px;font-size:.76rem;padding:8px 12px}
-  #s8 .tc-sub{margin-bottom:8px}
-  #s8 .tc-seal{padding:10px 14px}
+  #s9 .tc-sub{display:none}
+  #s9 .tc-count{font-size:.64rem}
+  #s9 .tc-actions{margin-top:0}
+  #s9 .guestbook{margin-top:18px;padding-top:15px}
+  #s9 .time-capsule{margin-top:20px;padding-top:16px}
+  #s9 .gb-form{margin-bottom:8px}
+  #s9 .gb-name,#s9 .gb-msg{padding:6px 11px;font-size:.74rem}
+  #s9 .gb-send{padding:6px 15px;font-size:.74rem}
+  #s9 .gb-list{max-height:96px}
+  #s9 .tc-input{min-height:44px;font-size:.76rem;padding:8px 12px}
+  #s9 .tc-sub{margin-bottom:8px}
+  #s9 .tc-seal{padding:10px 14px}
   #s8 .thanks-line{margin-top:9px;font-size:.84rem}
 }
 @media(max-height:800px){
@@ -1784,49 +1789,49 @@ html[data-theme="dark"] #s7::after{
   #s8 .contact-inner > p{margin-bottom:9px;font-size:.82rem}
   #s8 .contact-inner h2{margin-bottom:10px;font-size:clamp(1.3rem,3vw,1.7rem)}
   #s8 .thanks-line{margin-top:8px;font-size:.8rem}
-  #s8 .guestbook{margin-top:16px;padding-top:13px}
-  #s8 .time-capsule{margin-top:17px;padding-top:14px}
-  #s8 .gb-sub{display:none}
-  #s8 .gb-list{max-height:34px}
-  #s8 .gb-title{font-size:.92rem;margin-bottom:4px}
-  #s8 .tc-input{min-height:38px;font-size:.74rem}
-  #s8 .tc-title{font-size:.9rem}
-  #s8 .tc-sub{margin-bottom:7px}
-  #s8 .tc-seal{padding:8px 12px}
-  #s8 .tc-seal-ico{font-size:1.1rem}
+  #s9 .guestbook{margin-top:16px;padding-top:13px}
+  #s9 .time-capsule{margin-top:17px;padding-top:14px}
+  #s9 .gb-sub{display:none}
+  #s9 .gb-list{max-height:34px}
+  #s9 .gb-title{font-size:.92rem;margin-bottom:4px}
+  #s9 .tc-input{min-height:38px;font-size:.74rem}
+  #s9 .tc-title{font-size:.9rem}
+  #s9 .tc-sub{margin-bottom:7px}
+  #s9 .tc-seal{padding:8px 12px}
+  #s9 .tc-seal-ico{font-size:1.1rem}
   #s8 .contact-inner > p[style]{margin-top:9px !important}
-  #s8 .gb-form{margin-bottom:6px}
+  #s9 .gb-form{margin-bottom:6px}
   #s8 .thanks-line{margin-top:11px;font-size:.78rem}
 }
 @media(max-height:700px){
   #s8 .contact-inner{padding:13px 17px}
   #s8 .contact-inner h2{font-size:1.26rem;margin-bottom:8px}
   #s8 .contact-inner > p{margin-bottom:9px;font-size:.78rem;line-height:1.6}
-  #s8 .guestbook{margin-top:14px;padding-top:11px}
-  #s8 .time-capsule{margin-top:15px;padding-top:12px}
-  #s8 .gb-list{display:none}
-  #s8 .gb-sub{display:none}
-  #s8 .tc-title{font-size:.86rem;margin-bottom:3px}
-  #s8 .tc-sub{display:none}
-  #s8 .tc-input{min-height:32px;font-size:.7rem;padding:7px 11px}
-  #s8 .tc-actions{margin-top:1px}
-  #s8 .tc-count{font-size:.62rem}
+  #s9 .guestbook{margin-top:14px;padding-top:11px}
+  #s9 .time-capsule{margin-top:15px;padding-top:12px}
+  #s9 .gb-list{display:none}
+  #s9 .gb-sub{display:none}
+  #s9 .tc-title{font-size:.86rem;margin-bottom:3px}
+  #s9 .tc-sub{display:none}
+  #s9 .tc-input{min-height:32px;font-size:.7rem;padding:7px 11px}
+  #s9 .tc-actions{margin-top:1px}
+  #s9 .tc-count{font-size:.62rem}
   #s8 .contact-inner > p[style]{margin-top:8px !important;font-size:.64rem}
   #s8 .contact-links{margin-bottom:3px !important}
   #s8 .thanks-line{margin-top:6px;font-size:.74rem}
-  #s8 .gb-name,#s8 .gb-msg{padding:5px 10px;font-size:.7rem}
-  #s8 .gb-send{padding:5px 13px;font-size:.7rem}
+  #s9 .gb-name,#s9 .gb-msg{padding:5px 10px;font-size:.7rem}
+  #s9 .gb-send{padding:5px 13px;font-size:.7rem}
 }
 /* 极矮：再把留言板输入行收成一行 */
 @media(max-height:660px){
   #s8 .contact-inner{padding:11px 15px}
   #s8 .contact-inner h2{font-size:1.2rem;margin-bottom:7px}
   #s8 .contact-inner > p{margin-bottom:7px;font-size:.75rem;line-height:1.55}
-  #s8 .gb-form{margin-bottom:5px;gap:5px}
-  #s8 .time-capsule{margin-top:12px;padding-top:10px}
-  #s8 .guestbook{margin-top:11px;padding-top:9px}
-  #s8 .tc-title{font-size:.8rem}
-  #s8 .tc-input{min-height:30px;font-size:.68rem}
+  #s9 .gb-form{margin-bottom:5px;gap:5px}
+  #s9 .time-capsule{margin-top:12px;padding-top:10px}
+  #s9 .guestbook{margin-top:11px;padding-top:9px}
+  #s9 .tc-title{font-size:.8rem}
+  #s9 .tc-input{min-height:30px;font-size:.68rem}
   #s8 .thanks-line{margin-top:9px;font-size:.74rem}
   #s8 .contact-inner > p[style]{margin-top:6px !important;font-size:.6rem}
   #s8 .contact-links{margin-bottom:2px !important}
@@ -1836,9 +1841,9 @@ html[data-theme="dark"] #s7::after{
   #s8 .contact-inner{padding:10px 14px}
   #s8 .contact-inner h2{font-size:1.1rem;margin-bottom:6px}
   #s8 .contact-inner > p{display:none}
-  #s8 .tc-title{font-size:.76rem}
-  #s8 .tc-input{min-height:28px}
-  #s8 .gb-name{width:80px}
+  #s9 .tc-title{font-size:.76rem}
+  #s9 .tc-input{min-height:28px}
+  #s9 .gb-name{width:80px}
   #s8 .contact-inner > p[style]{display:none}
 }
 
@@ -1851,10 +1856,10 @@ html[data-theme="dark"] #s7::after{
   #s8 .contact-inner .sec-num{margin-bottom:6px !important}
   #s8 .contact-links{margin-bottom:6px !important}
   #s8 .thanks-line{margin-top:8px;font-size:.78rem}
-  #s8 .guestbook{margin-top:10px;padding-top:10px}
-  #s8 .gb-title{font-size:.92rem;margin-bottom:5px}
-  #s8 .gb-sub{display:none}
-  #s8 .gb-list{max-height:56px}
+  #s9 .guestbook{margin-top:10px;padding-top:10px}
+  #s9 .gb-title{font-size:.92rem;margin-bottom:5px}
+  #s9 .gb-sub{display:none}
+  #s9 .gb-list{max-height:56px}
   #s8 .contact-inner > p[style]{margin-top:14px !important;font-size:.7rem}
 }
 /* 极矮屏：此刻屏再压缩一档 */
@@ -2331,6 +2336,199 @@ body > .branch-back-fab.bb-parked{display:flex}
 }
 #s8 .wrap{position:relative;z-index:2}
 
+/* ==========================================================
+   星空留言墙（#s9）
+   独立成屏，深色星幕 + 星星留言 + 时间胶囊
+   ========================================================== */
+#s9{overflow-x:hidden;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain}
+
+/* 深空星幕：纯 CSS 多层径向渐变，不依赖图片资源。
+   用 ::before 铺底、::after 压一层暗纱保证文字可读，
+   与 #s7 / .hero-slide 的「背景 + 遮罩 + wrap 升层」手法一致。 */
+/* ⚠️ 注意：绝不能在这里写 position:relative ——
+   .slide 依赖 position:absolute 由 layout() 设置 top 来参与翻页，
+   改成 relative 会让它脱离定位体系、整屏掉到视口外。
+   背景层已由 .slide 自身建立包含块，直接叠 ::before/::after 即可。 */
+.star-slide{overflow:hidden}
+.star-slide::before{
+  content:"";position:absolute;inset:0;z-index:0;
+  background:
+    radial-gradient(ellipse 60% 50% at 22% 28%, rgba(122,88,200,.40), transparent 60%),
+    radial-gradient(ellipse 55% 48% at 78% 68%, rgba(88,140,220,.34), transparent 60%),
+    radial-gradient(ellipse 70% 60% at 50% 102%, rgba(200,120,180,.24), transparent 65%),
+    linear-gradient(180deg,#0d0b16 0%,#171331 55%,#0d0b16 100%);
+}
+.star-slide::after{
+  content:"";position:absolute;inset:0;z-index:1;pointer-events:none;
+  background:radial-gradient(ellipse 64% 60% at 50% 52%, rgba(13,11,22,.52) 0%, rgba(13,11,22,.22) 62%, transparent 100%);
+}
+/* 星空屏内容较长（星空 + 输入 + 胶囊），比一般屏更易超出。
+   不能沿用 .slide > .wrap 的 margin:auto 0 —— 内容超高时会把溢出
+   上下各分一半，导致顶部内容被推到视口下方、点击不到。
+   这里改为贴顶排布，保证从标题开始一定能滚到底。 */
+.star-slide > .wrap{position:relative;z-index:2;margin:0 auto}
+/* 深色屏内部文字固定为浅色，不受明暗主题切换影响 */
+.star-slide{
+  --ink:#edecf3; --ink-soft:#a9a5b8; --ink-faint:#7c7890;
+  --glass:rgba(255,255,255,.07); --glass-line:rgba(255,255,255,.16);
+  --glass-solid:rgba(28,24,44,.72); --glass-hi:rgba(255,255,255,.16);
+  --glass-soft:rgba(255,255,255,.06);
+  color:var(--ink);
+}
+.star-slide .sec-num{color:var(--halo-butter)}
+
+/* ---- 星空画布 ---- */
+.star-sky{
+  position:relative;
+  height:clamp(150px,23vh,260px);
+  border-radius:22px;
+  border:1px solid rgba(255,255,255,.13);
+  background:radial-gradient(ellipse at 50% 50%, rgba(255,255,255,.045), transparent 72%);
+  overflow:hidden;
+  margin-bottom:8px;
+}
+.star-hint{
+  text-align:center;margin:0 0 clamp(10px,1.8vh,18px);
+  font-size:.72rem;letter-spacing:.12em;color:var(--ink-faint);
+  min-height:1.2em;
+}
+
+/* 一颗星 */
+.star{
+  position:absolute;width:8px;height:8px;padding:0;border:0;
+  border-radius:50%;cursor:pointer;appearance:none;
+  background:radial-gradient(circle at 35% 35%, #fff, rgba(200,220,255,.7) 45%, transparent 72%);
+  box-shadow:0 0 10px 2px rgba(180,205,255,.55);
+  transform:translate(-50%,-50%);
+  transition:transform .45s cubic-bezier(.22,1,.36,1),box-shadow .45s;
+  animation:starTwinkle 3.6s ease-in-out infinite;
+}
+.star:hover,.star:focus-visible{
+  transform:translate(-50%,-50%) scale(2);
+  box-shadow:0 0 22px 7px rgba(200,220,255,.85);
+  outline:none;animation:none;
+}
+/* 公开信 = 金色星 */
+.star.pub{
+  background:radial-gradient(circle at 35% 35%, #fff, #ffd98a 45%, transparent 72%);
+  box-shadow:0 0 13px 3px rgba(255,210,130,.7);
+}
+.star.pub:hover,.star.pub:focus-visible{box-shadow:0 0 24px 8px rgba(255,216,140,.95)}
+@keyframes starTwinkle{
+  0%,100%{opacity:.72}
+  50%{opacity:1}
+}
+@media (prefers-reduced-motion: reduce){
+  .star{animation:none;opacity:.92}
+}
+
+/* ---- 星星详情弹层 ---- */
+.star-modal{
+  position:fixed;inset:0;z-index:210;
+  display:flex;align-items:center;justify-content:center;
+  padding:20px;
+  background:rgba(6,4,14,.62);
+  backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
+  opacity:0;visibility:hidden;
+  transition:opacity .42s ease,visibility .42s ease;
+}
+.star-modal.show{opacity:1;visibility:visible}
+.star-box{
+  width:100%;max-width:440px;
+  padding:clamp(24px,4vw,36px);
+  border-radius:26px;
+  border:1px solid rgba(255,255,255,.18);
+  background:rgba(24,19,44,.95);
+  box-shadow:0 40px 90px -30px rgba(0,0,0,.85);
+  color:#edecf3;text-align:center;
+  transform:scale(.92) translateY(10px);
+  transition:transform .5s cubic-bezier(.22,1,.36,1);
+}
+.star-modal.show .star-box{transform:none}
+.star-who{
+  margin:0 0 14px;font-family:var(--serif);
+  font-size:1.06rem;font-weight:700;letter-spacing:.06em;color:var(--halo-butter);
+}
+.star-what{
+  margin:0;font-size:.94rem;line-height:1.9;font-weight:300;
+  color:#edecf3;word-break:break-word;white-space:pre-wrap;
+}
+.star-when{
+  margin:16px 0 0;font-size:.7rem;letter-spacing:.12em;color:#8b87a0;
+}
+.star-actions{
+  margin-top:22px;display:flex;gap:10px;justify-content:center;flex-wrap:wrap;
+}
+.star-close,.star-del{
+  padding:9px 22px;border-radius:100px;cursor:pointer;
+  font-family:var(--serif);font-size:.8rem;letter-spacing:.1em;
+  border:1px solid rgba(255,255,255,.22);
+  background:rgba(255,255,255,.08);color:#edecf3;
+  transition:transform .35s cubic-bezier(.22,1,.36,1),background .3s,border-color .3s,color .3s;
+}
+.star-close:hover{background:rgba(255,255,255,.16);border-color:rgba(255,255,255,.4);transform:translateY(-2px)}
+.star-del{border-color:rgba(247,168,196,.45);color:#f7a8c4}
+.star-del:hover{background:rgba(247,168,196,.16);border-color:#f7a8c4;transform:translateY(-2px)}
+
+/* 星空屏内的时间胶囊：复用通用 .tc-* 样式，只补深色适配 */
+.star-slide .time-capsule{border-top-color:rgba(255,255,255,.16)}
+.star-slide .tc-input{
+  border-color:rgba(255,255,255,.18);
+  background:rgba(255,255,255,.06);color:var(--ink);
+}
+.star-slide .tc-input::placeholder{color:#7c7890}
+.star-slide .tc-input:focus{border-color:var(--halo-lilac);box-shadow:0 0 0 3px rgba(201,167,235,.2)}
+.star-slide .tc-seal{
+  background:linear-gradient(120deg,rgba(201,167,235,.18),rgba(160,200,255,.14));
+  border-color:rgba(255,255,255,.2);
+}
+.star-slide .tc-letter{background:rgba(255,255,255,.05)}
+
+/* 「生日公开」开关 */
+.tc-public{
+  display:flex;align-items:flex-start;gap:9px;cursor:pointer;
+  margin:2px 0 4px;
+  font-size:.72rem;line-height:1.6;color:var(--ink-soft);
+}
+.tc-public input{
+  appearance:none;-webkit-appearance:none;
+  flex:0 0 auto;width:17px;height:17px;margin-top:1px;
+  border-radius:6px;cursor:pointer;
+  border:1px solid rgba(255,255,255,.28);
+  background:rgba(255,255,255,.06);
+  transition:background .3s,border-color .3s;
+  position:relative;
+}
+.tc-public input:checked{
+  background:linear-gradient(120deg,var(--halo-butter),var(--halo-peach));
+  border-color:transparent;
+}
+.tc-public input:checked::after{
+  content:"✓";position:absolute;inset:0;
+  display:flex;align-items:center;justify-content:center;
+  font-size:.68rem;color:#2b2a33;font-weight:700;
+}
+.tc-public input:focus-visible{outline:2px solid var(--halo-sky);outline-offset:2px}
+
+/* 封存态的「重新编辑 / 取消封存」 */
+.tc-seal-actions{
+  display:flex;gap:9px;justify-content:flex-end;
+  margin-top:11px;flex-wrap:wrap;
+}
+.tc-mini{
+  padding:7px 15px;border-radius:100px;cursor:pointer;
+  font-family:var(--serif);font-size:.73rem;letter-spacing:.08em;
+  border:1px solid rgba(255,255,255,.2);
+  background:rgba(255,255,255,.06);color:var(--ink-soft);
+  transition:color .3s,border-color .3s,background .3s,transform .35s;
+}
+.tc-mini:hover{color:var(--ink);border-color:rgba(255,255,255,.42);transform:translateY(-2px)}
+.tc-mini.danger{color:#f7a8c4;border-color:rgba(247,168,196,.38)}
+.tc-mini.danger:hover{color:#f7a8c4;border-color:#f7a8c4;background:rgba(247,168,196,.12)}
+
+/* 访客模式：只读，看不到任何编辑入口 */
+.star-slide .owner-only.hide-owner{display:none !important}
+
 /* 感谢屏小字 */
 .thanks-line{
   margin-top:20px;font-size:.9rem;color:var(--ink-soft);font-weight:300;
@@ -2669,7 +2867,8 @@ body > .branch-back-fab.bb-parked{display:flex}
     <a href="#s4" data-slide="4">影像记忆</a>
     <a href="#s5" data-slide="5">她他它</a>
     <a href="#s6" data-slide="6">一句话</a>
-    <a href="#s7" data-slide="8">小游戏</a>
+    <a href="#s7" data-slide="7">小游戏</a>
+    <a href="#s9" data-slide="8">星空</a>
     <a href="#s8" data-slide="9">联系</a>
   </div>
 </nav>
@@ -2753,7 +2952,7 @@ body > .branch-back-fab.bb-parked{display:flex}
 
 <!-- 当前屏序号（右下角小字） -->
 <span id="curNum" class="sr-only" aria-hidden="true">1</span>
-<span id="totalNum" class="sr-only" aria-hidden="true">10</span>
+<span id="totalNum" class="sr-only" aria-hidden="true">11</span>
 
 <!-- ============================ 分页容器 ============================ -->
 <div class="deck" id="deck">
@@ -3319,11 +3518,85 @@ body > .branch-back-fab.bb-parked{display:flex}
     </div>
   </section>
 
+  <!-- 星空留言墙：把留言与时间胶囊独立成一屏 -->
+  <section class="slide star-slide" id="s9" data-label="星空留言墙">
+    <div class="wrap">
+      <div class="sec-head reveal" style="text-align:center">
+        <p class="sec-num">10 / STARS</p>
+        <h2>把话留在星空里</h2>
+        <p style="margin:0 auto">每一条留言都会变成一颗星，点开就能读到。</p>
+      </div>
+
+      <!-- 星空：星星由 JS 生成 -->
+      <div class="star-sky reveal" id="starSky" aria-label="留言星空"></div>
+      <p class="star-hint" id="starHint">— 还没有星星，等你点亮第一颗 —</p>
+
+      <!-- 留言输入（本人可见，访客只读） -->
+      <div class="gb-form owner-only" id="gbForm">
+        <input class="gb-name" id="gbName" type="text" maxlength="16" placeholder="你的名字">
+        <input class="gb-msg" id="gbMsg" type="text" maxlength="120" placeholder="写点什么…">
+        <button class="gb-send magnetic" id="gbSend" type="button">点亮一颗星</button>
+      </div>
+      <p class="gb-cloud" id="gbCloud"></p>
+
+      <!-- 留言列表容器：保留以兼容 JS 引用，星空模式下隐藏 -->
+      <div class="gb-list" id="gbList" hidden></div>
+
+      <!-- 备份工具（本人可见） -->
+      <div class="gb-tools owner-only" id="gbTools">
+        <button class="gb-tool" id="gbExport" type="button" title="导出一份备份文件，永远不会丢">⤓ 导出备份</button>
+        <button class="gb-tool" id="gbImport" type="button" title="从备份文件恢复留言">⤒ 导入备份</button>
+        <input id="gbFile" type="file" accept=".json,application/json" hidden>
+      </div>
+
+      <!-- 时间胶囊：写给未来的我 -->
+      <div class="time-capsule" id="timeCapsule">
+        <h3 class="tc-title">⏳ 时间胶囊 · 写给未来的我</h3>
+        <p class="tc-sub">这封信会被封存，直到下一个 1 月 1 日——你的生日，才能拆开。</p>
+
+        <div class="tc-write" id="tcWrite">
+          <textarea class="tc-input" id="tcInput" maxlength="300" rows="3" placeholder="现在的你，想对未来那一岁的自己说什么？"></textarea>
+          <label class="tc-public" id="tcPublicWrap">
+            <input type="checkbox" id="tcPublic">
+            <span>生日当天也让大家看到这封信（默认只有自己可见）</span>
+          </label>
+          <div class="tc-actions">
+            <span class="tc-count" id="tcCount">0 / 300</span>
+            <button class="gb-send magnetic" id="tcSave" type="button">封存</button>
+          </div>
+        </div>
+
+        <div class="tc-locked" id="tcLocked" hidden>
+          <div class="tc-seal">
+            <span class="tc-seal-ico">🔒</span>
+            <div>
+              <p class="tc-seal-line">已封存一封信 · <b id="tcUnlockDate">—</b> 开封</p>
+              <p class="tc-countdown">还有 <b id="tcDays">—</b> 天</p>
+            </div>
+          </div>
+          <div class="tc-seal-actions">
+            <button class="tc-mini" id="tcEdit" type="button">✎ 重新编辑</button>
+            <button class="tc-mini danger" id="tcCancel" type="button">✕ 取消封存</button>
+          </div>
+        </div>
+
+        <div class="tc-opened" id="tcOpened" hidden>
+          <div class="tc-letter">
+            <p class="tc-letter-head" id="tcLetterHead">—</p>
+            <p class="tc-letter-body" id="tcLetterBody"></p>
+            <p class="tc-letter-sign">—— 那时候的你</p>
+          </div>
+          <button class="tc-again" id="tcAgain" type="button">再写一封，寄往下一个生日 ✉</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
   <!-- 联系与感谢（最后一屏） -->
   <section class="slide" id="s8" data-label="联系与感谢">
     <div class="wrap">
       <div class="glass contact-inner reveal">
-        <p class="sec-num" style="margin-bottom:12px">09 / THANKS</p>
+        <p class="sec-num" style="margin-bottom:12px">11 / THANKS</p>
         <h2>谢谢你走到这里</h2>
         <p>这些回忆都很小，小到几乎不值一提。<br>但把它们放在一起，就变成了一个人来时的路。</p>
 
@@ -3333,56 +3606,7 @@ body > .branch-back-fab.bb-parked{display:flex}
 
         <p class="thanks-line">如果你也有一段想回去的时光，欢迎来找我聊聊。</p>
 
-        <!-- 留言板 -->
-        <div class="guestbook" id="guestbook">
-          <h3 class="gb-title">留一句话给我</h3>
-          <p class="gb-sub" id="gbSub">你的留言会存在这台设备上（换设备/清缓存会消失）</p>
-          <div class="gb-form">
-            <input class="gb-name" id="gbName" type="text" maxlength="16" placeholder="你的名字">
-            <input class="gb-msg" id="gbMsg" type="text" maxlength="120" placeholder="写点什么…">
-            <button class="gb-send magnetic" id="gbSend" type="button">留下</button>
-          </div>
-          <div class="gb-list" id="gbList"></div>
-          <div class="gb-tools">
-            <button class="gb-tool" id="gbExport" type="button" title="导出一份备份文件，永远不会丢">⤓ 导出备份</button>
-            <button class="gb-tool" id="gbImport" type="button" title="从备份文件恢复留言">⤒ 导入备份</button>
-            <input id="gbFile" type="file" accept=".json,application/json" hidden>
-          </div>
-          <p class="gb-cloud" id="gbCloud"></p>
-        </div>
-
-        <!-- 时间胶囊：写给未来的我 -->
-        <div class="time-capsule" id="timeCapsule">
-          <h3 class="tc-title">⏳ 时间胶囊 · 写给未来的我</h3>
-          <p class="tc-sub">这封信会被封存，直到下一个 1 月 1 日——你的生日，才能拆开。</p>
-
-          <div class="tc-write" id="tcWrite">
-            <textarea class="tc-input" id="tcInput" maxlength="300" rows="3" placeholder="现在的你，想对未来那一岁的自己说什么？"></textarea>
-            <div class="tc-actions">
-              <span class="tc-count" id="tcCount">0 / 300</span>
-              <button class="gb-send magnetic" id="tcSave" type="button">封存</button>
-            </div>
-          </div>
-
-          <div class="tc-locked" id="tcLocked" hidden>
-            <div class="tc-seal">
-              <span class="tc-seal-ico">🔒</span>
-              <div>
-                <p class="tc-seal-line">已封存一封信 · <b id="tcUnlockDate">—</b> 开封</p>
-                <p class="tc-countdown">还有 <b id="tcDays">—</b> 天</p>
-              </div>
-            </div>
-          </div>
-
-          <div class="tc-opened" id="tcOpened" hidden>
-            <div class="tc-letter">
-              <p class="tc-letter-head" id="tcLetterHead">—</p>
-              <p class="tc-letter-body" id="tcLetterBody"></p>
-              <p class="tc-letter-sign">—— 那时候的你</p>
-            </div>
-            <button class="tc-again" id="tcAgain" type="button">再写一封，寄往下一个生日 ✉</button>
-          </div>
-        </div>
+        <!-- 留言板与时间胶囊已独立成上一屏「星空留言墙」 -->
 
         <!-- 隐藏祝福卡：集齐 3 枚彩蛋徽章后自动展开 -->
         <div class="secret-note" id="secretNote" aria-hidden="true">
@@ -3406,6 +3630,19 @@ body > .branch-back-fab.bb-parked{display:flex}
 
 </div><!-- /.deck -->
 
+<!-- 星星详情弹层：点开一颗星读留言 -->
+<div class="star-modal" id="starModal" role="dialog" aria-modal="true" aria-labelledby="starWho">
+  <div class="star-box" role="document">
+    <p class="star-who" id="starWho">—</p>
+    <p class="star-what" id="starWhat"></p>
+    <p class="star-when" id="starWhen"></p>
+    <div class="star-actions">
+      <button class="star-del" id="starDel" type="button" hidden>✕ 删除这条</button>
+      <button class="star-close" id="starClose" type="button">关闭</button>
+    </div>
+  </div>
+</div>
+
 <footer style="position:fixed;left:50%;bottom:8px;transform:translateX(-50%);z-index:89;padding:0;pointer-events:none">
   <p style="font-size:.68rem;letter-spacing:.12em;opacity:.55">Made with <span class="heart">♥</span> and sunlight
     <span class="egg-trigger" id="eggTrigger" role="button" tabindex="0" title="试试点我" aria-label="隐藏彩蛋" style="pointer-events:auto">✦</span>
@@ -3415,8 +3652,26 @@ body > .branch-back-fab.bb-parked{display:flex}
 <script>
 /* ==========================================================
    颜涵的个人小站 · PPT 式分页交互脚本
-   核心：.deck 整体位移翻页，9 屏
+   核心：.deck 整体位移翻页，11 屏
    ========================================================== */
+
+/* ==========================================================
+   -1. 身份判定（必须最先求值）
+   本机首次打开 → 站长本人（可写、可删、可封存）
+   陌生设备打开 → 访客（只读，只看星空）
+   ⚠️ 时间胶囊的 IIFE 在留言板之前执行，所以身份必须在这里
+      一次性求值并挂到 window，不能各自判断（否则读到 undefined）。
+   ========================================================== */
+window.__IS_OWNER = (function(){
+  try {
+    const k = 'yh_owner';
+    const v = localStorage.getItem(k);
+    if (v === 'owner') return true;
+    if (v === 'guest') return false;
+    localStorage.setItem(k, 'owner');   // 首次访问：默认这是颜涵自己的浏览器
+    return true;
+  } catch(e){ return true; }
+})();
 
 /* ==========================================================
    0. 明暗主题（自由切换 + 本地记忆）
@@ -3586,8 +3841,9 @@ const GUIDE_LINES = [
   '人聊完了，<b>说句正经的</b>',                    // 5 她他它 → 一句话
   '话说完了，<b>前面有块果冻在等你</b>',            // 6 一句话 → 捏一捏
   '捏爽了吗？<b>来玩个小游戏吧</b>',                // 7 捏一捏 → 小游戏
-  '玩够了吗？<b>最后聊两句真的</b>',                // 8 小游戏 → 联系与感谢
-  '就到这里啦，<b>想我了就回开头看看</b>'          // 9 最后 → 回到开头
+  '玩累了？<b>去星空里留句话</b>',                  // 8 小游戏 → 星空留言墙
+  '星星收下了，<b>最后说两句真的</b>',              // 9 星空 → 联系与感谢
+  '就到这里啦，<b>想我了就回开头看看</b>'          // 10 最后 → 回到开头
 ];
 
 function updateGuide(){
@@ -5371,9 +5627,78 @@ document.querySelectorAll('.flip').forEach(card => {  card.addEventListener('cli
   const letterHead = document.getElementById('tcLetterHead');
   const letterBody  = document.getElementById('tcLetterBody');
   const againBtn = document.getElementById('tcAgain');
+  const publicEl = document.getElementById('tcPublic');
+  const publicWrap = document.getElementById('tcPublicWrap');
+  const editBtn  = document.getElementById('tcEdit');
+  const cancelBtn= document.getElementById('tcCancel');
 
   const KEY = 'yh_capsule_v1';
   const BIRTH = { m: 1, d: 1 };      // 生日：1 月 1 日
+
+  /* ---------- 云端（复用留言板的 Supabase 连接，表名 capsule） ----------
+     只有勾了"生日公开"的信才会上云；不勾就纯本机，别人永远看不到。 */
+  const CLOUD = window.__CLOUD || null;
+  const capsuleOn = () => !!(CLOUD && CLOUD.url && CLOUD.key);
+  const CLOUD_TABLE = 'capsule';
+
+  async function cloudPushCapsule(obj){
+    if (!capsuleOn()) return false;
+    try {
+      const r = await fetch(CLOUD.url + '/rest/v1/' + CLOUD_TABLE, {
+        method: 'POST',
+        headers: {
+          apikey: CLOUD.key,
+          Authorization: 'Bearer ' + CLOUD.key,
+          'Content-Type': 'application/json',
+          Prefer: 'return=minimal'
+        },
+        body: JSON.stringify(obj)
+      });
+      return r.ok;
+    } catch(e){ return false; }
+  }
+  async function cloudDeleteCapsule(at){
+    if (!capsuleOn() || !at) return false;
+    try {
+      const r = await fetch(CLOUD.url + '/rest/v1/' + CLOUD_TABLE +
+        '?at=eq.' + encodeURIComponent(at), {
+        method: 'DELETE',
+        headers: {
+          apikey: CLOUD.key,
+          Authorization: 'Bearer ' + CLOUD.key,
+          Prefer: 'return=minimal'
+        }
+      });
+      if (!r.ok) return false;
+      // 回查确认（Supabase 删 0 行也返回 204）
+      const chk = await fetch(CLOUD.url + '/rest/v1/' + CLOUD_TABLE +
+        '?select=id&at=eq.' + encodeURIComponent(at) + '&limit=1',
+        { headers: { apikey: CLOUD.key, Authorization: 'Bearer ' + CLOUD.key } });
+      if (!chk.ok) return true;
+      const left = await chk.json();
+      return Array.isArray(left) && left.length === 0;
+    } catch(e){ return false; }
+  }
+  /* 读取所有已公开的信（生日当天展示用） */
+  async function cloudFetchCapsule(){
+    if (!capsuleOn()) return null;
+    try {
+      const r = await fetch(CLOUD.url + '/rest/v1/' + CLOUD_TABLE +
+        '?select=*&order=at.desc&limit=50',
+        { headers: { apikey: CLOUD.key, Authorization: 'Bearer ' + CLOUD.key } });
+      if (!r.ok) return null;
+      const arr = await r.json();
+      return Array.isArray(arr) ? arr : null;
+    } catch(e){ return null; }
+  }
+  /* 生日是否已到：跨年后的 1/1 当天（含之后）视为解锁 */
+  function birthdayUnlocked(at){
+    const now = new Date();
+    const sealed = new Date(at);
+    if (now.getFullYear() > sealed.getFullYear()) return true;
+    return now.getMonth() === BIRTH.m - 1 && now.getDate() >= BIRTH.d &&
+           now.getFullYear() >= sealed.getFullYear();
+  }
 
   function load(){
     try {
@@ -5414,6 +5739,7 @@ document.querySelectorAll('.flip').forEach(card => {  card.addEventListener('cli
     return true;
   }
 
+  const IS_OWNER = window.__IS_OWNER !== false;   // 访客为 false（全局判定，见脚本顶部）
   function render(){
     const data = load();
     writeEl.hidden  = true;
@@ -5421,14 +5747,19 @@ document.querySelectorAll('.flip').forEach(card => {  card.addEventListener('cli
     openedEl.hidden = true;
 
     if (!data){
-      writeEl.hidden = false;
+      // 访客不给写信入口
+      writeEl.hidden = !IS_OWNER;
+      if (publicWrap) publicWrap.hidden = !IS_OWNER;
+      // 回填公开开关（新写时默认关闭）
+      if (publicEl) publicEl.checked = false;
       return;
     }
 
     if (isUnlockable(data.at)){
       openedEl.hidden = false;
       const d = new Date(data.at);
-      letterHead.textContent = '封存于 ' + d.getFullYear() + ' 年 ' + (d.getMonth()+1) + ' 月 ' + d.getDate() + ' 日';
+      letterHead.textContent = '封存于 ' + d.getFullYear() + ' 年 ' + (d.getMonth()+1) + ' 月 ' + d.getDate() + ' 日' +
+        (data.public ? ' · 已设为生日公开' : '');
       letterBody.textContent = data.text;
     } else {
       lockedEl.hidden = false;
@@ -5447,7 +5778,7 @@ document.querySelectorAll('.flip').forEach(card => {  card.addEventListener('cli
   }
 
   if (saveBtn){
-    saveBtn.addEventListener('click', () => {
+    saveBtn.addEventListener('click', async () => {
       const v = (input.value || '').trim();
       if (!v || v.length < 2){
         input.focus();
@@ -5456,8 +5787,58 @@ document.querySelectorAll('.flip').forEach(card => {  card.addEventListener('cli
         setTimeout(() => { count.style.color = ''; count.textContent = input.value.length + ' / 300'; }, 1600);
         return;
       }
-      save({ text: v, at: Date.now() });
+      const wantPublic = !!(publicEl && publicEl.checked);
+      const at = Date.now();
+      save({ text: v, at, public: wantPublic });
       render();
+
+      // 勾了"生日公开"才上云；不上云就纯本机，别人永远看不到
+      if (wantPublic && capsuleOn()){
+        const ok = await cloudPushCapsule({ text: v, at, public: true });
+        const el = document.getElementById('gbCloud');
+        if (el) {
+          el.textContent = ok
+            ? '✓ 已封存，并会在生日那天让大家看到'
+            : '已封存本机（云端没连上，生日公开可能不生效）';
+          el.dataset.state = ok ? 'ok' : 'warn';
+        }
+      }
+    });
+  }
+
+  /* 重新编辑：把信取回来接着改 */
+  if (editBtn){
+    editBtn.addEventListener('click', () => {
+      const d = load();
+      if (!d) return;
+      if (input){ input.value = d.text || ''; }
+      if (count) count.textContent = (input ? input.value.length : 0) + ' / 300';
+      if (publicEl) publicEl.checked = !!d.public;
+      try { localStorage.removeItem(KEY); } catch(e){}
+      render();
+      if (input) input.focus();
+    });
+  }
+
+  /* 取消封存：二次确认后彻底清掉 */
+  if (cancelBtn){
+    cancelBtn.addEventListener('click', async () => {
+      const d = load();
+      if (!confirm('取消封存后这封信会消失，确定吗？')) return;
+      try { localStorage.removeItem(KEY); } catch(e){}
+      render();
+      if (input){ input.value = ''; }
+      if (count) count.textContent = '0 / 300';
+      if (input) input.focus();
+      // 如果这封信曾经公开过，云端也一起删掉
+      if (d && d.public){
+        const ok = await cloudDeleteCapsule(d.at);
+        const el = document.getElementById('gbCloud');
+        if (el) {
+          el.textContent = ok ? '✓ 已取消封存（云端同步删除）' : '已取消封存（云端未同步成功）';
+          el.dataset.state = ok ? 'ok' : 'warn';
+        }
+      }
     });
   }
 
@@ -5470,6 +5851,14 @@ document.querySelectorAll('.flip').forEach(card => {  card.addEventListener('cli
       render();
       if (input) input.focus();
     });
+  }
+
+  /* ---------- 访客只读：不显示写信区与编辑按钮 ---------- */
+  if (window.__IS_OWNER === false){
+    if (writeEl) writeEl.hidden = true;
+    if (editBtn) editBtn.hidden = true;
+    if (cancelBtn) cancelBtn.hidden = true;
+    if (publicWrap) publicWrap.hidden = true;
   }
 
   render();
@@ -5738,7 +6127,7 @@ document.querySelectorAll('.flip').forEach(card => {  card.addEventListener('cli
 })();
 
 /* ==========================================================
-   16. 留言板（本机存储）
+   16. 星空留言墙（星星渲染 + 本机/访客分流 + 云端同步）
    ========================================================== */
 (function guestbook(){
   const list  = document.getElementById('gbList');
@@ -5746,6 +6135,19 @@ document.querySelectorAll('.flip').forEach(card => {  card.addEventListener('cli
   const msgI  = document.getElementById('gbMsg');
   const send  = document.getElementById('gbSend');
   if (!list || !send) return;
+
+  const sky    = document.getElementById('starSky');
+  const hint   = document.getElementById('starHint');
+  const modal  = document.getElementById('starModal');
+  const mWho   = document.getElementById('starWho');
+  const mWhat  = document.getElementById('starWhat');
+  const mWhen  = document.getElementById('starWhen');
+  const mDel   = document.getElementById('starDel');
+  const mClose = document.getElementById('starClose');
+
+  /* 身份判定已在脚本最开头统一求值，这里直接取用
+     （见文件顶部 "-1. 身份判定"） */
+  const IS_OWNER = window.__IS_OWNER !== false;
 
   const KEY = 'yh_guestbook_v1';
 
@@ -5761,8 +6163,11 @@ document.querySelectorAll('.flip').forEach(card => {  card.addEventListener('cli
   };
   const cloudOn = () => !!(CLOUD.url && CLOUD.key);
 
-  const subEl  = document.getElementById('gbSub');
   const cloudEl= document.getElementById('gbCloud');
+
+  /* 暴露给时间胶囊复用（同一套 Supabase 连接与 cloudOn 判断） */
+  window.__CLOUD = CLOUD;
+  window.__cloudOn = cloudOn;
 
   function load(){
     try { return JSON.parse(localStorage.getItem(KEY) || '[]'); }
@@ -5893,76 +6298,95 @@ document.querySelectorAll('.flip').forEach(card => {  card.addEventListener('cli
     return out;
   }
 
+  /* ---------- 星星渲染 ---------- */
+  /* 位置由 name+ts 做 hash 决定：同一条留言每次打开都落在同一处，不会乱跳 */
+  function hash(str){
+    let h = 2166136261;
+    str = String(str);
+    for (let i = 0; i < str.length; i++){
+      h ^= str.charCodeAt(i);
+      h = Math.imul(h, 16777619);
+    }
+    return Math.abs(h);
+  }
+
+  let seq = 0;   // 记录当前渲染顺序，供删除时定位
+
   function paint(arr){
+    if (!sky) return;
+    sky.innerHTML = '';
     list.innerHTML = '';
-    if (!arr.length) {
-      const p = document.createElement('p');
-      p.className = 'gb-empty';
-      p.textContent = '还没有人留言，你是第一个 ✦';
-      list.appendChild(p);
+
+    if (!arr.length){
+      if (hint) hint.textContent = IS_OWNER
+        ? '— 还没有星星，等你点亮第一颗 —'
+        : '— 星空还空着，等它的主人先写点什么 —';
       return;
     }
-    arr.slice().reverse().forEach(it => {
-      const d = document.createElement('div');
-      d.className = 'gb-item';
+    if (hint) hint.textContent = '一共 ' + arr.length + ' 颗星 · 点一颗读读看';
 
-      const head = document.createElement('div');
-      head.className = 'gb-head';
-      head.innerHTML =
-        '<span class="gb-who">' + esc(it.name || '匿名') + '</span>' +
-        '<span class="gb-when">' + fmt(it.ts) + '</span>';
-
-      const del = document.createElement('button');
-      del.className = 'gb-del';
-      del.type = 'button';
-      del.title = '删除这条留言';
-      del.setAttribute('aria-label', '删除 ' + (it.name || '匿名') + ' 的留言');
-      del.textContent = '✕';
-      del.addEventListener('click', async e => {
-        e.stopPropagation();
-        if (!confirm('删除这条留言吗？')) return;
-
-        // 1) 本地立即删掉
-        const local = load().filter(m => !(m.ts === it.ts && m.msg === it.msg));
-        save(local);
-
-        // 2) 动画移除该条
-        d.classList.add('gb-out');
-        setTimeout(() => {
-          const rest = load();
-          paint(rest);              // 只重画本地剩余，不触发云端拉取（避免把删掉的又拉回来）
-          // 清空按钮：还有留言就补上，空了就移除
-          const old = list.querySelector('.gb-clear');
-          if (old) old.remove();
-          if (rest.length) addClearBtn();
-        }, 300);
-
-        // 3) 云端同步删除（失败不影响本地已删）
-        if (cloudOn()) {
-          const ok = await cloudDelete(it);
-          if (cloudEl) {
-            cloudEl.textContent = ok
-              ? '✓ 已删除（云端同步完成）'
-              : '已从本机删除（云端未同步成功）';
-            cloudEl.dataset.state = ok ? 'ok' : 'warn';
-          }
-        }
-      });
-
-      head.appendChild(del);
-
-      const body = document.createElement('p');
-      body.className = 'gb-what';
-      body.textContent = it.msg;
-
-      d.appendChild(head);
-      d.appendChild(body);
-      list.appendChild(d);
+    arr.forEach(it => {
+      const s = document.createElement('button');
+      s.className = 'star' + (it.public ? ' pub' : '');
+      s.type = 'button';
+      const h = hash((it.name || '') + it.ts + (it.msg || '').slice(0, 8));
+      s.style.left = (9 + (h % 82)) + '%';
+      s.style.top  = (8 + ((h >> 9) % 58)) + '%';   // 纵向限制在 8%~66%，避开右下角翻页控件
+      s.style.animationDelay = ((h >> 5) % 36) / 10 + 's';
+      s.title = (it.name || '匿名') + ' 的留言';
+      s.setAttribute('aria-label', '读 ' + (it.name || '匿名') + ' 的留言');
+      s.addEventListener('click', () => openStar(it));
+      sky.appendChild(s);
     });
   }
 
+  /* ---------- 点星星读留言 ---------- */
+  let opened = null;
+  function openStar(it){
+    opened = it;
+    if (mWho)  mWho.textContent  = it.name || '匿名';
+    if (mWhat) mWhat.textContent = it.msg;
+    if (mWhen) mWhen.textContent = fmt(it.ts) + (it.public ? ' · 公开信' : '');
+    if (mDel)  mDel.hidden = !IS_OWNER;      // 访客看不到删除入口
+    if (modal) modal.classList.add('show');
+    if (mClose) mClose.focus({ preventScroll: true });
+  }
+  function closeStar(){
+    opened = null;
+    if (modal) modal.classList.remove('show');
+  }
+  if (mClose) mClose.addEventListener('click', closeStar);
+  if (modal) modal.addEventListener('click', e => { if (e.target === modal) closeStar(); });
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape' && modal && modal.classList.contains('show')) closeStar();
+  });
+
+  /* 弹层内的删除：本地删 + 云端同步删（带回查确认） */
+  if (mDel) mDel.addEventListener('click', async () => {
+    const it = opened;
+    if (!it) return;
+    if (!confirm('删除这条留言吗？')) return;
+
+    const local = load().filter(m => !(m.ts === it.ts && m.msg === it.msg));
+    save(local);
+    closeStar();
+    paint(local);
+    if (local.length) addClearBtn();
+
+    if (cloudOn()) {
+      const ok = await cloudDelete(it);
+      if (cloudEl) {
+        cloudEl.textContent = ok ? '✓ 已删除（云端同步完成）' : '已从本机删除（云端未同步成功）';
+        cloudEl.dataset.state = ok ? 'ok' : 'warn';
+      }
+    }
+  });
+
+
   function addClearBtn(){
-    if (list.querySelector('.gb-clear')) return;   // 已经有就别重复加
+    if (!IS_OWNER) return;                          // 访客不给清空入口
+    const box = document.getElementById('gbTools') || list;
+    if (box.querySelector('.gb-clear')) return;     // 已经有就别重复加
     const clr = document.createElement('button');
     clr.className = 'gb-clear';
     clr.type = 'button';
@@ -5995,13 +6419,14 @@ document.querySelectorAll('.flip').forEach(card => {  card.addEventListener('cli
         }
       }
     });
-    list.appendChild(clr);
+    // 清空按钮挂在工具栏末尾
+    box.appendChild(clr);
   }
 
   function render(){
     const local = load();
     paint(local);
-    if (local.length) addClearBtn();
+    if (IS_OWNER && local.length) addClearBtn();
 
     // 云端拉到之后：与本地「合并去重」，绝不用云端覆盖本地
     cloudFetch().then(remote => {
@@ -6010,12 +6435,62 @@ document.querySelectorAll('.flip').forEach(card => {  card.addEventListener('cli
       if (!merged.length) return;
       save(merged);                            // 合并结果回写本地
       paint(merged);
-      addClearBtn();
+      if (IS_OWNER) addClearBtn();
     });
+  }
+
+  /* ---------- 生日公开信：变成一颗金色星 ---------- */
+  /* 只有「跨年后的 1 月 1 日」当天及之后，云端封存的公开信才会出现在星空里 */
+  const CAPSULE_TABLE = 'capsule';
+  function birthdayReached(at){
+    const now = new Date(), sealed = new Date(at);
+    if (now.getFullYear() > sealed.getFullYear()) return true;
+    return now.getMonth() === 0 && now.getDate() === 1;
+  }
+  async function showPublicLetters(){
+    if (!cloudOn() || !sky) return;
+    // 表还没建好时记住一次，避免每次进站都发请求刷 404
+    let noTable = false;
+    try { noTable = localStorage.getItem('yh_capsule_nopull') === '1'; } catch(e){}
+    if (noTable) return;
+    try {
+      const r = await fetch(CLOUD.url + '/rest/v1/' + CAPSULE_TABLE +
+        '?select=*&order=at.desc&limit=20',
+        { headers: { apikey: CLOUD.key, Authorization: 'Bearer ' + CLOUD.key } });
+      if (r.status === 404){
+        try { localStorage.setItem('yh_capsule_nopull', '1'); } catch(e){}
+        return;                                // 表未创建：静默跳过，不再反复请求
+      }
+      if (!r.ok) return;
+      const arr = await r.json();
+      if (!Array.isArray(arr) || !arr.length) return;
+
+      arr.filter(it => it.public && birthdayReached(it.at)).forEach((it, i) => {
+        const s = document.createElement('button');
+        s.className = 'star pub';
+        s.type = 'button';
+        const h = hash('capsule' + it.at);
+        s.style.left = (12 + (h % 76)) + '%';
+        s.style.top  = (14 + ((h >> 7) % 66)) + '%';
+        s.style.animationDelay = (i * 0.4) + 's';
+        s.title = '颜涵封存的一封信';
+        s.setAttribute('aria-label', '读颜涵封存的信');
+        s.addEventListener('click', () => {
+          if (mWho)  mWho.textContent  = '颜涵 · 封存于生日前';
+          if (mWhat) mWhat.textContent = it.text || '';
+          if (mWhen) mWhen.textContent = '在 ' + fmt(it.at) + ' 写下的';
+          if (mDel)  mDel.hidden = true;
+          if (modal) modal.classList.add('show');
+          if (mClose) mClose.focus({ preventScroll: true });
+        });
+        sky.appendChild(s);
+      });
+    } catch(e){ /* 静默：表不存在或网络问题都不该影响页面 */ }
   }
 
   /* ---------- 提交 ---------- */
   async function submit(){
+    if (!IS_OWNER) return;                     // 访客只读，不写
     const name = (nameI.value || '').trim() || '匿名';
     const msg  = (msgI.value || '').trim();
     if (!msg) { msgI.focus(); return; }
@@ -6032,7 +6507,6 @@ document.querySelectorAll('.flip').forEach(card => {  card.addEventListener('cli
     //    所以提交时只重画本地，云端结果等下次进入本屏时再合并。
     paint(arr);
     addClearBtn();
-    list.scrollTop = list.scrollHeight;
 
     // 再尝试上云（失败也不影响本地保存）
     if (cloudOn()) {
@@ -6123,14 +6597,29 @@ document.querySelectorAll('.flip').forEach(card => {  card.addEventListener('cli
     fr.readAsText(f);
   });
 
+  /* ---------- 访客分流：只读模式 ---------- */
+  if (!IS_OWNER){
+    document.querySelectorAll('#s9 .owner-only').forEach(e => e.classList.add('hide-owner'));
+  } else {
+    document.querySelectorAll('#s9 .owner-only').forEach(e => e.classList.remove('hide-owner'));
+  }
+
   /* ---------- 状态提示 ---------- */
-  if (subEl && cloudOn()) subEl.textContent = '留言会保存到云端，换设备也看得见';
-  if (cloudEl && cloudOn()) {
-    cloudEl.textContent = '已开启云端同步';
-    cloudEl.dataset.state = 'ok';
+  const gbTitle = document.getElementById('gbTitle');
+  if (!IS_OWNER){
+    if (cloudEl) {
+      cloudEl.textContent = '这是颜涵的星空，欢迎你来看看';
+      cloudEl.dataset.state = '';
+    }
+  } else {
+    if (cloudOn()) {
+      cloudEl.textContent = '已开启云端同步，换设备也看得见';
+      cloudEl.dataset.state = 'ok';
+    }
   }
 
   render();
+  showPublicLetters();          // 生日当天把公开信渲染成金色星
 })();
 
 /* ==========================================================
