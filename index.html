@@ -26,9 +26,14 @@
 <link rel="apple-touch-icon" href="assets/favicon-180.png?v=1">
 <!-- 主题色：浏览器外壳（地址栏等）会跟着变色 -->
 <meta name="theme-color" content="#181228">
+<!-- ====== 字体 ======
+     只加载 Noto Serif SC（全站 40 处用它），并且只取实际用到的 4 个字重。
+     原来还请求了 Noto Sans SC 的 3 个字重，但全站只有 2 处用它，
+     中文按 unicode-range 会被切成几十个分片——实测 30 个字体请求、约 1MB。
+     正文类文字改用系统无衬线字体（手机上就是苹方/鸿蒙，更快也更好看）。 -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@300;500;700;900&family=Noto+Sans+SC:wght@300;400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@300;500;700;900&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -118,7 +123,7 @@
       <span class="music-pct" id="musicPct">35</span>
     </div>
   </div>
-  <audio id="bgm" loop preload="metadata" src="assets/music.mp3?v=4"></audio>
+  <audio id="bgm" loop preload="none" data-src="assets/music.mp3?v=4"></audio>
 </div>
 
 <!-- 右上角：明暗主题切换 -->
@@ -288,7 +293,7 @@
           <span class="mem-tag"># 童年 · 雪</span>
           <div class="mem-back">
             <div class="mem-back-inner">
-              <img class="mem-photo" src="assets/mem-snow.jpg?v=5" alt="童年雪地里的我：蓝绒帽、红脸颊、黑棉袄，蹲在雪地里笑得见牙不见眼">
+              <img class="mem-photo" data-src="assets/mem-snow.jpg?v=5" alt="童年雪地里的我：蓝绒帽、红脸颊、黑棉袄，蹲在雪地里笑得见牙不见眼">
               <p>那天就是这个样子——蓝绒帽压到眉毛，鼻尖冻得通红，蹲在白茫茫的院子里笑得见牙不见眼。原来家乡以前，真的会下雪。</p>
             </div>
           </div>
@@ -411,11 +416,11 @@
             <span class="geo-arrow">▾</span>
           </summary>
           <div class="geo-grid">
-            <figure><img src="assets/cs-1.jpg" alt="长沙青年艺术雕像"><figcaption>青年艺术雕像 · 目光穿过一百年</figcaption></figure>
-            <figure><img src="assets/cs-2.jpg" alt="湖南大学"><figcaption>湖南大学 · 没有围墙的大学</figcaption></figure>
-            <figure><img src="assets/cs-3.jpg" alt="古麓山寺"><figcaption>古麓山寺 · 湖湘第一道场</figcaption></figure>
-            <figure><img src="assets/cs-4.jpg" alt="想你和你 在长沙见一面"><figcaption>想和你，在长沙见一面</figcaption></figure>
-            <figure><img src="assets/cs-5.jpg" alt="抗战中的湖南人展览"><figcaption>一盏灯的展览 · 抗战中的湖南人</figcaption></figure>
+            <figure><img data-src="assets/cs-1.jpg" alt="长沙青年艺术雕像"><figcaption>青年艺术雕像 · 目光穿过一百年</figcaption></figure>
+            <figure><img data-src="assets/cs-2.jpg" alt="湖南大学"><figcaption>湖南大学 · 没有围墙的大学</figcaption></figure>
+            <figure><img data-src="assets/cs-3.jpg" alt="古麓山寺"><figcaption>古麓山寺 · 湖湘第一道场</figcaption></figure>
+            <figure><img data-src="assets/cs-4.jpg" alt="想你和你 在长沙见一面"><figcaption>想和你，在长沙见一面</figcaption></figure>
+            <figure><img data-src="assets/cs-5.jpg" alt="抗战中的湖南人展览"><figcaption>一盏灯的展览 · 抗战中的湖南人</figcaption></figure>
           </div>
         </details>
 
@@ -427,9 +432,9 @@
             <span class="geo-arrow">▾</span>
           </summary>
           <div class="geo-grid">
-            <figure><img src="assets/zs-1.jpg" alt="舟山水乡"><figcaption>白墙上的「舟山」两个字</figcaption></figure>
-            <figure><img src="assets/zs-2.jpg" alt="枝头杨梅"><figcaption>雨后的杨梅 · 红得发亮</figcaption></figure>
-            <figure><img src="assets/zs-3.jpg" alt="摘杨梅"><figcaption>伸手够到的那颗最甜</figcaption></figure>
+            <figure><img data-src="assets/zs-1.jpg" alt="舟山水乡"><figcaption>白墙上的「舟山」两个字</figcaption></figure>
+            <figure><img data-src="assets/zs-2.jpg" alt="枝头杨梅"><figcaption>雨后的杨梅 · 红得发亮</figcaption></figure>
+            <figure><img data-src="assets/zs-3.jpg" alt="摘杨梅"><figcaption>伸手够到的那颗最甜</figcaption></figure>
           </div>
         </details>
 
@@ -441,11 +446,11 @@
             <span class="geo-arrow">▾</span>
           </summary>
           <div class="geo-grid">
-            <figure><img src="assets/nb-1.jpg" alt="南塘老街"><figcaption>南塘老街 · 一排红灯笼</figcaption></figure>
-            <figure><img src="assets/nb-2.jpg" alt="宁波老街"><figcaption>老街的午后 · 石板路发亮</figcaption></figure>
-            <figure><img src="assets/nb-3.jpg" alt="宁波江边廊桥"><figcaption>江边的廊桥 · 倒影比房子好看</figcaption></figure>
-            <figure><img src="assets/nb-4.jpg" alt="宁波 City Walk 墙"><figcaption>「寧波」City Walk 打卡墙</figcaption></figure>
-            <figure><img src="assets/nb-5.jpg" alt="麒麟照壁"><figcaption>石头刻的麒麟 · 踏云而来</figcaption></figure>
+            <figure><img data-src="assets/nb-1.jpg" alt="南塘老街"><figcaption>南塘老街 · 一排红灯笼</figcaption></figure>
+            <figure><img data-src="assets/nb-2.jpg" alt="宁波老街"><figcaption>老街的午后 · 石板路发亮</figcaption></figure>
+            <figure><img data-src="assets/nb-3.jpg" alt="宁波江边廊桥"><figcaption>江边的廊桥 · 倒影比房子好看</figcaption></figure>
+            <figure><img data-src="assets/nb-4.jpg" alt="宁波 City Walk 墙"><figcaption>「寧波」City Walk 打卡墙</figcaption></figure>
+            <figure><img data-src="assets/nb-5.jpg" alt="麒麟照壁"><figcaption>石头刻的麒麟 · 踏云而来</figcaption></figure>
           </div>
         </details>
 
@@ -457,9 +462,9 @@
             <span class="geo-arrow">▾</span>
           </summary>
           <div class="geo-grid">
-            <figure><img src="assets/sz-1.jpg" alt="苏州大学路牌"><figcaption>苏州大学的路牌 · 每条路都有故事</figcaption></figure>
-            <figure><img src="assets/sz-2.jpg" alt="知道你会来所以我等"><figcaption>知道你会来，所以我等</figcaption></figure>
-            <figure><img src="assets/sz-3.jpg" alt="苏式灯笼"><figcaption>屋檐下的苏式灯笼</figcaption></figure>
+            <figure><img data-src="assets/sz-1.jpg" alt="苏州大学路牌"><figcaption>苏州大学的路牌 · 每条路都有故事</figcaption></figure>
+            <figure><img data-src="assets/sz-2.jpg" alt="知道你会来所以我等"><figcaption>知道你会来，所以我等</figcaption></figure>
+            <figure><img data-src="assets/sz-3.jpg" alt="苏式灯笼"><figcaption>屋檐下的苏式灯笼</figcaption></figure>
           </div>
         </details>
       </div>
@@ -553,7 +558,7 @@
 
         <div class="glass them-item reveal tilt">
           <div class="them-avatar c2">他</div>
-          <img class="them-photo" src="assets/pt-wei.jpg" alt="伟哥">
+          <img class="them-photo" data-src="assets/pt-wei.jpg" alt="伟哥">
           <h3>伟哥</h3>
           <p>传奇的人生，未知的结局。胡子留得比故事还长，笑起来却还是很傻——故事讲到这里还没有收尾，正因为不知道下一章写什么，才更想一直追下去。</p>
         </div>
