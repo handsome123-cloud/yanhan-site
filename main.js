@@ -4114,6 +4114,9 @@ window.createRing = function(opts){
         img.addEventListener('error', () => { img.remove(); el.classList.add('ph'); });
         img.dataset.src = it.src + '?v=4';
         img.style.zIndex = '2';
+        /* 竖长图（如伟哥 640x1450）在近似方形的卡里会被切掉顶部的脸，
+           对准上半身位置。 */
+        if (it.src.indexOf('pt-wei') !== -1) img.style.objectPosition = '50% 14%';
         face.appendChild(img);
         el.__img = img;
       }
