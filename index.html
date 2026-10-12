@@ -7152,15 +7152,39 @@ document.querySelectorAll('.flip').forEach(card => {  card.addEventListener('cli
     if (IS_OWNER && local.length) addClearBtn();
 
     // 云端拉到之后：与本地「合并去重」，绝不用云端覆盖本地
+    // ⚠️ 微信/QQ 内置浏览器网络抖动很常见，失败自动重试一次
     cloudFetch().then(remote => {
-      if (!remote) return;                     // 拉取失败：保持本地不动
-      const merged = merge(local, remote);
-      if (!merged.length) return;
-      save(merged);                            // 合并结果回写本地
-      paint(merged);
-      if (IS_OWNER) addClearBtn();
-    });
+      if (remote){ applyRemote(local, remote); return; }
+      // 第一次失败 → 1.2 秒后重试一次
+      return new Promise(res => setTimeout(res, 1200)).then(cloudFetch)
+        .then(r2 => { if (r2) applyRemote(local, r2); });
+    }).catch(() => {});
   }
+  function applyRemote(local, remote){
+    const merged = merge(local, remote);
+    if (!merged.length) return;
+    save(merged);                            // 合并结果回写本地
+    paint(merged);
+    if (IS_OWNER) addClearBtn();
+  }
+
+  /* ---------- 微信/QQ 防星空消失三重保险 ----------
+     内置浏览器的常见行为：
+       ① 切后台再回来 → WebView 冻结/回收，回来后不会自动刷新数据
+       ② 内存紧张时整页重载 → 只跑 load 事件，星空若只在加载时渲染一次就会漏
+       ③ 网络抖动 → 云拉失败后不再补拉
+     对策：每次「进入星空屏」都重新 render；从后台恢复（visibilitychange）
+     也重新 render。render 本身是幂等的（paint 前先清空），重复调用无副作用。 */
+  const skySlide = document.getElementById('s9');
+  if (skySlide){
+    new MutationObserver(() => {
+      if (skySlide.classList.contains('active')) render();
+    }).observe(skySlide, { attributes:true, attributeFilter:['class'] });
+  }
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) return;
+    if (sky && sky.closest('.slide') && sky.closest('.slide').classList.contains('active')) render();
+  });
 
   /* ---------- 生日公开信：变成一颗金色星 ---------- */
   /* 只有「跨年后的 1 月 1 日」当天及之后，云端封存的公开信才会出现在星空里 */
