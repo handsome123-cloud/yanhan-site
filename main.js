@@ -258,6 +258,23 @@ function goTo(i, instant){
     clearTimeout(goTo._t);
     goTo._t = setTimeout(() => { animating = false; }, DURATION);
   }
+  /* 翻到这一屏了 → 解锁屏内所有「待命」的图片（写着 data-src 的那些）。
+     主序列所有屏在 DOM 里是同时存在的，远端的屏虽然看不见，
+     但浏览器仍可能去下载里面的图；统一改成翻到时才赋 src。
+     解锁过就记在 __imgsArmed 上，来回翻不会重复赋值。 */
+  armSlideImgs(slides[cur]);
+}
+
+/* 解锁一屏里所有 data-src 图片。幂等，可重复调用。 */
+function armSlideImgs(sl){
+  if (!sl || sl.__imgsArmed) return;
+  const pend = sl.querySelectorAll('img[data-src]');
+  if (!pend.length) return;
+  sl.__imgsArmed = true;
+  pend.forEach(img => {
+    img.src = img.dataset.src;
+    img.removeAttribute('data-src');
+  });
 }
 function next(){ goTo(cur + 1); }
 function prev(){ goTo(cur - 1); }
@@ -293,9 +310,28 @@ function openBranch(el){
   branchOpen = el;
   el.style.zIndex = '30';           // 压在影像记忆屏之上
 
+  /* 这个分支屏里的图平时只写着 data-src，到这里才真正赋 src。
+     好处：没打开过的分支屏一张图都不会下载（s4a 有 16 张约 4.5MB），
+     手机端首屏能省掉一大半流量。赋过一次的会记在 __srcDone 上，不重复赋。 */
+  if (!el.__srcDone){
+    el.__srcDone = true;
+    el.querySelectorAll('img[data-src]').forEach(img => {
+      img.src = img.dataset.src;
+      img.removeAttribute('data-src');
+    });
+  }
+
   el.classList.add('open');
   el.querySelectorAll('.reveal').forEach(x => x.classList.add('in'));
   document.documentElement.classList.add('branch-mode');
+
+  /* 这个分支屏里的环形相册（人像 s4b / 日常 s4c）平时只挂 data-src，
+     到这里才「上膛」——把整个环的图一次性拉下来。
+     好处：没打开过的分支相册一张图都不会下载，手机端首屏省一大截。 */
+  ['ring-faces', 'ring-daily'].forEach(id => {
+    const r = el.querySelector('#' + id);
+    if (r && r.__ring && typeof r.__ring.armImgs === 'function') r.__ring.armImgs();
+  });
 
   // 返回键搬出 deck，fixed 才真正相对视口
   parkBackButtons(el);
@@ -330,6 +366,9 @@ document.addEventListener('keydown', e => {
 
 /* 初始化激活态 */
 setActive();
+/* 首屏的「待命」图片要立刻解锁 —— goTo 只在用户翻页时才跑，
+   初始这一屏不能等它。 */
+armSlideImgs(slides[cur]);
 
 /* ---------- 游戏屏自适应：精确计算画布可用高度，保证永不溢出 ---------- */
 function fitGameStage(){
@@ -3215,6 +3254,12 @@ document.querySelectorAll('.flip').forEach(card => {  card.addEventListener('cli
   }
 
   function play(){
+    /* ⚠️ 音乐整首 4.7MB，一进站就下载会让手机端首屏很慢。
+       所以 <audio> 上写 preload="none" 且不设 src，
+       真正点了播放按钮，这里才把 src 挂上（此时浏览器才开始下载）。 */
+    if (audio.dataset.src && !audio.getAttribute('src')){
+      audio.src = audio.dataset.src;
+    }
     // 先静音起播（绕过浏览器对"突然出声"的拦截），再淡入
     audio.volume = 0;
     const p = audio.play();
@@ -3963,6 +4008,14 @@ window.createRing = function(opts){
   const N      = ITEMS.length;
   if (!N) return null;
 
+  /* 整环图片的「上膛」开关。
+     图片卡建卡时只挂 data-src，不直接请求。
+     主序列的影像记忆环（s3）在首屏附近，一进站就该有图 → 默认 true；
+     三个分支相册的环不在首屏，要等它真正被打开（openBranch → armImgs）
+     才置 true —— 没打开过的分支相册，一张图都不会下载。
+     人像 8 张约 3MB、日常 6 个视频，这一项能给手机端省掉不少。 */
+  let imgArmed = opts.armImgs !== false;
+
   /* 相邻卡片角度步长。
      ⚠️ 桌面端原本是「不满一圈的弧」（26°/30°），8 张卡只铺 208°，
      投影后全堆在屏幕一侧、互相压 150px，观感就是"糊成一团"。
@@ -3991,13 +4044,22 @@ window.createRing = function(opts){
 
     if (it.kind === 'video'){
       const v = document.createElement('video');
-      v.src = it.src + '?v=4';
-      v.controls = true;
-      v.preload = 'metadata';
+      /* ⚠️ 刻意不在这里设 src：
+         环里最多有 6 个视频，如果建卡时就赋 src，即使 preload=metadata
+         浏览器也会为每个视频发请求（实测 12 个视频 ≈ 21MB）。
+         手机端 4G 下这是首屏卡顿的主因。
+         改成"转到正面 / 用户点播放时才赋 src"，首屏一个视频都不下载。 */
+      v.dataset.src = it.src + '?v=4';
+      v.preload = 'none';
       v.playsInline = true;
       v.setAttribute('playsinline', '');
       v.addEventListener('pointerdown', e => e.stopPropagation());
       v.addEventListener('click', e => e.stopPropagation());
+      /* 兜底：万一手快，在卡片还没转到正面时就点了播放，
+         这里先把 src 补上，避免"点了没反应"。 */
+      v.addEventListener('play', () => {
+        if (v.dataset.src){ v.src = v.dataset.src; v.removeAttribute('data-src'); }
+      });
       v.controls = false;                 /* 默认不带控制条，转到正面再开 */
       el.__video = v;                     /* place() 里按景深开关控制条 */
       face.appendChild(v);
@@ -4008,14 +4070,14 @@ window.createRing = function(opts){
         const img = document.createElement('img');
         img.alt = it.title || '';
         img.decoding = 'async';
-        /* loading 用 eager：环所在的屏（影像记忆主屏 / 三个分支屏）在没翻到
-           之前都是不可见状态，懒图在不可见容器里不会加载，翻过去就是白板。
-           环一次只有 1~2 张在正面，天然就是懒加载，不需要浏览器再帮忙。 */
+        /* loading 用 eager：环一次只有 1~2 张在正面，天然就是懒加载。
+           但这里**故意不直接给 src**，只挂 data-src —— 见下面 __imgs 的说明。 */
         img.loading = 'eager';
         img.addEventListener('error', () => { img.remove(); el.classList.add('ph'); });
-        img.src = it.src + '?v=4';
+        img.dataset.src = it.src + '?v=4';
         img.style.zIndex = '2';
         face.appendChild(img);
+        el.__img = img;
       }
 
       const ico = document.createElement('span');
@@ -4100,6 +4162,11 @@ window.createRing = function(opts){
   let visible = false;
   let lastX = 0, lastT = 0, rafId = 0;
   let resumeAt = 0;      // 这个时间点之前不恢复自动旋转
+  /* 用户是否真的动过这个环。
+     视频卡有近 3MB，静止展示时不该下载；
+     所以初次进入这一屏只显示封面（视频是黑的，但有编号/标题撑着），
+     等用户拖动、点箭头或点圆点之后，才正式把视频拉下来。 */
+  let userTouched = false;
 
   function place(){
     const a0 = rad(angle);
@@ -4145,7 +4212,27 @@ window.createRing = function(opts){
       el.style.pointerEvents = t > 0.5 ? 'auto' : 'none';
       el.setAttribute('aria-hidden', t > 0.5 ? 'false' : 'true');
       /* 视频卡：只有转到正面才显示控制条，侧面的卡保持干净 */
-      if (el.__video) el.__video.controls = (t > 0.85);
+      if (el.__video){
+        el.__video.controls = (t > 0.85);
+        /* 挂载 src 的两个条件：
+           ① 用户真的和环交互过（拖过/点过箭头圆点）—— 静止展示时不下载，
+              避免"刚进这一屏就吃掉几 MB 流量"；
+           ② 这张卡转到了接近正面（t > 0.7）—— 侧背面的卡用户看不到。
+           挂过一次就把 dataset.src 删掉，不会重复赋值。 */
+        if (userTouched && t > 0.7 && el.__video.dataset.src){
+          el.__video.src = el.__video.dataset.src;
+          el.__video.removeAttribute('data-src');
+        }
+      }
+      /* 图片卡：只挂 data-src，等整环「可见」时一次性补 src。
+         ⚠️ 为什么不像视频那样按 t 单张挂：用户一转就是一整圈，
+         转到正面才去下载会看到一块白板从侧面滑出来。
+         而整环一次性加载已经足够省 —— 三个分支环（人像 8 张约 3MB、
+         日常 6 个视频）在没被打开之前，一张图都不会下载。 */
+      if (el.__img && el.__img.dataset.src && imgArmed){
+        el.__img.src = el.__img.dataset.src;
+        el.__img.removeAttribute('data-src');
+      }
     });
     syncBar();
   }
@@ -4161,7 +4248,7 @@ window.createRing = function(opts){
       const b = document.createElement('button');
       b.type = 'button';
       b.setAttribute('aria-label', '转到第 ' + (i + 1) + ' 张');
-      b.addEventListener('click', () => spinTo(i));
+      b.addEventListener('click', () => spinTo(i, true));
       dotsEl.appendChild(b);
       dots.push(b);
     }
@@ -4186,7 +4273,14 @@ window.createRing = function(opts){
       String(((fi % N) + N) % N + 1).padStart(2, '0') + ' / ' + String(N).padStart(2, '0');
   }
 
-  function spinTo(i){
+  function spinTo(i, byUser){
+    /* ⚠️ 只有「用户主动触发」才算交互。
+       初始化时也会走一次 spinTo(0) 来摆正起始角度，那次不能算，
+       否则视频会在页面一加载就全部下载。 */
+    if (byUser && !userTouched){
+      userTouched = true;
+      queueMicrotask(() => { try { place(); } catch(e){} });
+    }
     i = ((i % N) + N) % N;
     const want  = -i * STEP;
     const turns = Math.round((angle - want) / 360);
@@ -4230,6 +4324,9 @@ window.createRing = function(opts){
     /* 点在箭头 / 播放键 / 圆点上时不进入拖拽，否则 click 会被 pointer capture 吞掉 */
     if (e.target.closest('.ring-nav,.ring-play,.ring-dots')) return;
     dragging = true;
+    /* 用户开始拖了 → 允许加载视频，并立刻重排一次，
+       让"当时正停在正面"的那张视频卡马上开始下载 */
+    if (!userTouched){ userTouched = true; queueMicrotask(() => { try { place(); } catch(e){} }); }
     target = null;
     vel = 0;
     ring.classList.add('dragging');
@@ -4273,7 +4370,7 @@ window.createRing = function(opts){
         if (e.target.closest('video')) return;
         const fi = frontIndex();
         if (fi === i) ringshot(el, i);
-        else spinTo(i);
+        else spinTo(i, true);
       });
     });
   } else {
@@ -4282,8 +4379,8 @@ window.createRing = function(opts){
 
   const prevBtn = ring.parentElement.querySelector('.ring-prev');
   const nextBtn = ring.parentElement.querySelector('.ring-next');
-  prevBtn?.addEventListener('click', () => spinTo(frontIndex() - 1));
-  nextBtn?.addEventListener('click', () => spinTo(frontIndex() + 1));
+  prevBtn?.addEventListener('click', () => spinTo(frontIndex() - 1, true));
+  nextBtn?.addEventListener('click', () => spinTo(frontIndex() + 1, true));
 
   /* ---------- 自动旋转开关 ---------- */
   function setPlay(on){
@@ -4304,8 +4401,8 @@ window.createRing = function(opts){
 
   /* 键盘：左右方向键转环 */
   ring.addEventListener('keydown', e => {
-    if (e.key === 'ArrowLeft'){ e.preventDefault(); spinTo(frontIndex() - 1); }
-    else if (e.key === 'ArrowRight'){ e.preventDefault(); spinTo(frontIndex() + 1); }
+    if (e.key === 'ArrowLeft'){ e.preventDefault(); spinTo(frontIndex() - 1, true); }
+    else if (e.key === 'ArrowRight'){ e.preventDefault(); spinTo(frontIndex() + 1, true); }
   });
 
   /* ---------- 点击放大：正对你的卡片单独成焦点 ---------- */
@@ -4346,6 +4443,13 @@ window.createRing = function(opts){
 
   const api = {
     spinTo,
+    /* 让整环图片「上膛」——分支相册被打开时由 openBranch 调用。
+       主序列环默认就已上膛，调不调都一样。 */
+    armImgs(){
+      if (imgArmed) return;
+      imgArmed = true;
+      try { place(); } catch(e){}
+    },
     get angle(){ return angle; },
     get R(){ return R; },
     get visible(){ return visible; },
@@ -4415,6 +4519,9 @@ window.createRing = function(opts){
     const isVideo = cfg.files[0].endsWith('.mp4');
     window.createRing({
       root: rootId,
+      /* 分支环不在首屏 —— 没被打开之前，图片和视频一张都不下载。
+         等用户真的点进去（openBranch），再调 __ring.armImgs() 上膛。 */
+      armImgs: false,
       items: cfg.files.map((f, i) => {
         if (isVideo){
           return { kind:'video', icon: cfg.icons[i],
