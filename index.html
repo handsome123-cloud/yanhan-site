@@ -2896,9 +2896,10 @@ body > .branch-back-fab.bb-parked{display:flex}
     <a href="#s4" data-slide="4">影像记忆</a>
     <a href="#s5" data-slide="5">她他它</a>
     <a href="#s6" data-slide="6">一句话</a>
-    <a href="#s7" data-slide="7">小游戏</a>
-    <a href="#s9" data-slide="8">星空</a>
-    <a href="#s8" data-slide="9">联系</a>
+    <a href="#jelly" data-slide="7">捏一捏</a>
+    <a href="#s7" data-slide="8">小游戏</a>
+    <a href="#s9" data-slide="9">星空</a>
+    <a href="#s8" data-slide="10">联系</a>
   </div>
 </nav>
 
@@ -3423,7 +3424,7 @@ body > .branch-back-fab.bb-parked{display:flex}
   <section class="slide star-slide" id="s9" data-label="星空留言墙">
     <div class="wrap">
       <div class="sec-head reveal" style="text-align:center">
-        <p class="sec-num">10 / STARS</p>
+        <p class="sec-num">09 / STARS</p>
         <h2>把话留在星空里</h2>
         <p style="margin:0 auto">每一条留言都会变成一颗星，点开就能读到。</p>
       </div>
@@ -3497,7 +3498,7 @@ body > .branch-back-fab.bb-parked{display:flex}
   <section class="slide" id="s8" data-label="联系与感谢">
     <div class="wrap">
       <div class="glass contact-inner reveal">
-        <p class="sec-num" style="margin-bottom:12px">11 / THANKS</p>
+        <p class="sec-num" style="margin-bottom:12px">10 / THANKS</p>
         <h2>谢谢你走到这里</h2>
         <p>这些回忆都很小，小到几乎不值一提。<br>但把它们放在一起，就变成了一个人来时的路。</p>
 
@@ -6324,7 +6325,13 @@ document.querySelectorAll('.flip').forEach(card => {  card.addEventListener('cli
     if (cloudOn()) {
       const ok = await cloudDelete(it);
       if (cloudEl) {
-        cloudEl.textContent = ok ? '✓ 已删除（云端同步完成）' : '已从本机删除（云端未同步成功）';
+        /* 云端删失败时说清楚后果：刷新后会"复活"，
+           并直接告诉用户根因和解决办法，避免以为是网站坏了 */
+        cloudEl.textContent = ok
+          ? '✓ 已删除（云端同步完成）'
+          : '⚠ 只删掉了本机缓存：云端没删掉，刷新后这条还会回来。' +
+            '原因通常是 Supabase 缺删除权限，请在 SQL Editor 执行：' +
+            'create policy "delete all" on guestbook for delete using (true);';
         cloudEl.dataset.state = ok ? 'ok' : 'warn';
       }
     }
@@ -6357,7 +6364,9 @@ document.querySelectorAll('.flip').forEach(card => {  card.addEventListener('cli
         if (cloudEl) {
           cloudEl.textContent = ok
             ? '✓ 已清空（含云端）'
-            : '已清空本机（云端未同步成功）';
+            : '⚠ 只清掉了本机：云端没清掉，刷新后旧留言还会回来。' +
+              '请在 Supabase SQL Editor 执行：' +
+              'create policy "delete all" on guestbook for delete using (true);';
           cloudEl.dataset.state = ok ? 'ok' : 'warn';
         }
       } else {
