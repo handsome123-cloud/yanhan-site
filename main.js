@@ -4008,7 +4008,12 @@ window.createRing = function(opts){
         const img = document.createElement('img');
         img.alt = it.title || '';
         img.decoding = 'async';
-        img.loading = 'lazy';
+        /* ⚠️ 这里不能用 loading="lazy"：
+           环所在的屏（影像记忆主屏 / 三个分支屏）在没翻到之前都是
+           visibility:hidden 或 opacity:0 的不可见状态，Chromium 对
+           不可见元素内的懒图会一直不加载，等到真正翻过去时还是白板。
+           环本身就是"转到正面才需要"，天然懒加载，所以用 eager。 */
+        img.loading = 'eager';
         img.addEventListener('error', () => { img.remove(); el.classList.add('ph'); });
         img.src = it.src + '?v=4';
         img.style.zIndex = '2';
