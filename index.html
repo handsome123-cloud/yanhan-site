@@ -6771,6 +6771,8 @@ window.createRing = function(opts){
       v.setAttribute('playsinline', '');
       v.addEventListener('pointerdown', e => e.stopPropagation());
       v.addEventListener('click', e => e.stopPropagation());
+      v.controls = false;                 /* 默认不带控制条，转到正面再开 */
+      el.__video = v;                     /* place() 里按景深开关控制条 */
       face.appendChild(v);
     } else {
       /* ph:true = 纯占位卡，不请求任何图片，控制台不会刷 404。
@@ -6867,29 +6869,39 @@ window.createRing = function(opts){
 
   function place(){
     const a0 = rad(angle);
-    /* 真 3D 环：卡片不再是"永远正对你的贴纸"（那是平面感的根源），
-       而是像挂在旋转木马上——每张卡跟着自己所在的方位角转动：
-       正面的卡正对你，侧面的卡斜过去，背面的卡转到后面去。
-       rotateY(-方位角) 就是"让卡面始终朝向环外"。 */
-    const LIFT = narrow ? 26 : 40;   // 竖向错位幅度
+    /* coverflow 式立体感 —— 这是 Apple CoverFlow 的做法，也是唯一
+       既"有立体感"又"卡片不会变形到看不清"的方案。
+
+       ⚠️ 之前用完整的 rotateY(-方位角)：卡片转到侧面时会被投影压成
+       一条 30px 的缝（247px → 30px），图片和视频全废，这不是"立体"
+       而是"看不见"。所以这里改成**限幅斜转**：
+       方位角越大 → 转得越多，但最多只转到 ±TILT_MAX(32°) 就封顶。
+       于是正面卡端正、两侧卡明显斜过去有厚度感、远处的卡适度侧转，
+       而任何一张卡都保留 85% 以上的可视宽度，图/视频始终看得清。 */
+    const LIFT     = narrow ? 26 : 40;   // 竖向错位幅度
+    const TILT_MAX = 32;                 // 斜转封顶角（度）
     cards.forEach((el, i) => {
       const a  = a0 + rad(i * STEP);
       const z  = Math.cos(a) * R;
       const x  = Math.sin(a) * R;
       const t  = (z + R) / (2 * R);              // 0 = 最远，1 = 最近
       const y  = (1 - t) * -LIFT;                /* 越远越往上飘 */
-      const sc = 0.72 + t * 0.30;                /* 景深拉开：后排明显更小 */
-      const op = 0.28 + t * 0.72;
-      const ry = -(a0 + i * STEP);               /* 卡面朝向环外，立体感的核心 */
+      const sc = 0.78 + t * 0.24;                /* 景深：后排明显更小 */
+      const op = 0.34 + t * 0.66;
+      /* 斜转角 = 方位角，但夹在 ±TILT_MAX 内（sin 取符号，保证左右对称） */
+      const s  = Math.sin(a);
+      const ry = -Math.sign(s) * Math.min(Math.abs(s), 1) * TILT_MAX;
       el.style.transform =
         'translate3d(' + x.toFixed(2) + 'px, ' + y.toFixed(2) + 'px, ' + z.toFixed(2) + 'px) ' +
         'rotateY(' + ry.toFixed(2) + 'deg) ' +
         'scale(' + sc.toFixed(4) + ')';
       el.style.opacity = op.toFixed(3);
       el.style.zIndex  = String(Math.round(1000 + z));
-      el.style.filter  = t < 0.42 ? 'blur(' + ((0.42 - t) * 4.5).toFixed(2) + 'px)' : 'none';
-      el.style.pointerEvents = t > 0.55 ? 'auto' : 'none';
-      el.setAttribute('aria-hidden', t > 0.55 ? 'false' : 'true');
+      el.style.filter  = t < 0.42 ? 'blur(' + ((0.42 - t) * 3.5).toFixed(2) + 'px)' : 'none';
+      el.style.pointerEvents = t > 0.5 ? 'auto' : 'none';
+      el.setAttribute('aria-hidden', t > 0.5 ? 'false' : 'true');
+      /* 视频卡：只有转到正面才显示控制条，侧面的卡保持干净 */
+      if (el.__video) el.__video.controls = (t > 0.85);
     });
     syncBar();
   }
