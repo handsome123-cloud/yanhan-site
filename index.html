@@ -385,13 +385,15 @@ html[data-theme="dark"] .motion .ripple-ring{border-color:rgba(180,210,255,.5)}
     content:"";flex:0 0 2px;
   }
 
-  /* 分支相册屏：2 列 + 缩略图压扁 */
-  .branch-slide .album-grid{grid-template-columns:repeat(2,1fr);gap:10px}
-  .branch-slide .album-ph{aspect-ratio:16/10}
-  .branch-slide .album-item h4{font-size:.78rem}
-  .branch-slide .album-item p{display:none}
+  /* 分支相册屏：环形轮播收紧 */
+  .branch-ring{height:clamp(200px,28vh,260px)}
+  .branch-slide .ring-card{--cw:180px;--ch:135px}
+  .branch-slide .ring-ico{width:38px;height:38px;font-size:1.2rem}
+  .branch-slide .ring-title{font-size:.78rem}
+  .branch-slide .ring-sub{font-size:.6rem}
+  .branch-slide .ring-nav{width:30px;height:30px;font-size:.76rem}
+  .branch-slide .ring-hint{font-size:.64rem}
   .branch-slide .sec-head{padding-right:0}
-  .branch-slide .album-tip{display:none}   /* 手机上收起配置说明，节省高度 */
 
   /* 末屏：留言/胶囊/密码卡整体压缩 */
   #s9 .tc-title{font-size:.9rem}
@@ -2068,82 +2070,29 @@ body > .branch-back-fab.bb-parked{display:flex}
   .branch-back-fab{display:none}
 }
 
-.album-grid{
-  display:grid;grid-template-columns:repeat(3,1fr);
-  gap:clamp(12px,1.8vw,20px);
-  margin-top:clamp(6px,1.4vh,16px);
-}
-.album-item{
-  position:relative;cursor:default;
-  border-radius:20px;overflow:hidden;
-  border:1px solid var(--glass-line);
-  background:var(--glass-hi);
-  backdrop-filter:blur(16px) saturate(1.4);
-  -webkit-backdrop-filter:blur(16px) saturate(1.4);
-  box-shadow:var(--shadow);
-  transition:transform .55s cubic-bezier(.22,1,.36,1),box-shadow .55s cubic-bezier(.22,1,.36,1);
-}
-.album-item:hover{transform:translateY(-6px) scale(1.015);box-shadow:0 28px 52px -26px rgba(80,60,110,.5)}
-.album-ph{
-  aspect-ratio:4/3;width:100%;
-  display:flex;align-items:center;justify-content:center;
-  background:linear-gradient(135deg,rgba(255,185,154,.32),rgba(201,167,235,.28),rgba(143,201,240,.3));
-  border-bottom:1px dashed var(--dash-line);
-  position:relative;overflow:hidden;
-}
-.album-item img{
-  position:absolute;inset:0;width:100%;height:100%;object-fit:cover;
-}
-.album-ico{
-  font-size:1.6rem;line-height:1;color:var(--ink-faint);opacity:.72;
-  transition:transform .55s cubic-bezier(.22,1,.36,1),opacity .4s ease;
-}
-.album-item:hover .album-ico{transform:scale(1.16);opacity:.95}
-.album-item figcaption{padding:clamp(10px,1.5vh,15px) clamp(12px,1.5vw,18px)}
-.album-item h4{
-  font-family:var(--serif);font-size:.86rem;font-weight:700;
-  letter-spacing:.03em;color:var(--ink);margin-bottom:4px;
-}
-.album-item p{font-size:.72rem;line-height:1.6;color:var(--ink-soft);font-weight:300}
-.album-tip{
-  text-align:center;margin-top:clamp(10px,2vh,20px);
-  font-size:.72rem;letter-spacing:.1em;color:var(--ink-faint);
-}
-.album-tip b{color:var(--accent);font-weight:600}
 
-/* 分支屏：6 张卡 3×2，高屏自身就要紧凑，否则撑出滚动 */
-.branch-slide .sec-head{margin-bottom:0}
+
+/* 分支屏：内容只有「标题 + 环形轮播」，天然紧凑 */
+.branch-slide .sec-head{margin-bottom:clamp(8px,1.6vh,20px)}
 .branch-slide .sec-head h2{margin-bottom:6px}
 .branch-slide{padding-bottom:clamp(44px,5.6vh,64px)}
-.album-grid{margin-top:clamp(4px,1vh,12px)}
 
-/* 分支屏的矮屏压缩（多档，确保零溢出） */
-@media(max-height:1000px){
-  .album-ph{aspect-ratio:16/10}
-  .album-item p{font-size:.68rem}
-}
+/* 分支环比主环略小一点，给返回键和标题留呼吸 */
+.branch-ring{height:clamp(210px,31vh,320px)}
+.branch-slide .ring-card{--cw:200px;--ch:150px}
+.branch-slide .ring-hint{margin-top:clamp(6px,1vh,10px)}
+
+/* 分支屏矮屏压缩：只收高度，不动结构 */
 @media(max-height:900px){
   .branch-slide .sec-head p:not(.sec-num){display:none}
-  .album-item h4{font-size:.8rem}
-  .album-item figcaption{padding:9px 13px}
-  .album-grid{gap:11px}
+  .branch-ring{height:clamp(190px,28vh,270px)}
 }
 @media(max-height:820px){
-  .album-ph{aspect-ratio:16/9}
-  .album-item p{display:none}
-  .album-tip{margin-top:8px}
-}
-@media(max-height:740px){
-  .album-item figcaption{padding:7px 11px}
-  .album-item h4{font-size:.76rem;margin-bottom:0}
-  .album-tip{display:none}
+  .branch-ring{height:clamp(170px,26vh,240px)}
 }
 @media(max-height:680px){
-  .album-ph{aspect-ratio:2/1}
+  .branch-ring{height:clamp(150px,24vh,210px)}
   .branch-slide .sec-head{margin-bottom:8px}
-}
-@media(max-width:900px){
-  .album-grid{grid-template-columns:repeat(2,1fr)}
 }
 @media(max-width:560px){
   .branch-row{grid-template-columns:1fr;max-width:340px}
@@ -2151,7 +2100,6 @@ body > .branch-back-fab.bb-parked{display:flex}
   .branch-card .branch-go{display:none}
   .branch-name{font-size:.9rem}
   .branch-ico{font-size:1.2rem}
-  .album-grid{grid-template-columns:repeat(2,1fr)}
   .album-item p{display:none}
 }
 
@@ -3272,51 +3220,23 @@ body > .branch-back-fab.bb-parked{display:flex}
         <p>走过的山与路 · 相册待你补满</p>
       </div>
 
-      <div class="album-grid">
-        <figure class="album-item reveal" data-slot>
-          <div class="album-ph"><span class="album-ico">⛰</span></div>
-          <figcaption>
-            <h4>泰山 · 与文人共游</h4>
-            <p>那张手绘策划图终于要变成真的了</p>
-          </figcaption>
-        </figure>
-        <figure class="album-item reveal" data-slot>
-          <div class="album-ph"><span class="album-ico">≋</span></div>
-          <figcaption>
-            <h4>待补 · 下一段旅程</h4>
-            <p>把照片放进 assets，改个名字就能显示</p>
-          </figcaption>
-        </figure>
-        <figure class="album-item reveal" data-slot>
-          <div class="album-ph"><span class="album-ico">☼</span></div>
-          <figcaption>
-            <h4>待补 · 海边的夏天</h4>
-            <p>留个位置给还没发生的故事</p>
-          </figcaption>
-        </figure>
-        <figure class="album-item reveal" data-slot>
-          <div class="album-ph"><span class="album-ico">◇</span></div>
-          <figcaption>
-            <h4>待补 · 城市一夜</h4>
-            <p>灯亮起来的时候最好看</p>
-          </figcaption>
-        </figure>
-        <figure class="album-item reveal" data-slot>
-          <div class="album-ph"><span class="album-ico">⌘</span></div>
-          <figcaption>
-            <h4>待补 · 某次远行</h4>
-            <p>在路上，就是最好的时候</p>
-          </figcaption>
-        </figure>
-        <figure class="album-item reveal" data-slot>
-          <div class="album-ph"><span class="album-ico">⊙</span></div>
-          <figcaption>
-            <h4>待补 · 一个清晨</h4>
-            <p>早起的人才配看到的那几分钟</p>
-          </figcaption>
-        </figure>
+      <div class="ring branch-ring reveal" id="ring-travel" tabindex="0" role="group"
+           aria-roledescription="3D 环形轮播" aria-label="旅游生活相册">
+        <div class="ring-core" aria-hidden="true"></div>
+        <div class="ring-stage"></div>
+        <div class="ring-halo" aria-hidden="true"></div>
+        <button class="ring-nav ring-prev" type="button" aria-label="上一张">‹</button>
+        <button class="ring-nav ring-next" type="button" aria-label="下一张">›</button>
       </div>
-      <p class="album-tip reveal">把照片放进 <b>assets/</b> 文件夹，并在 <b>assets/albums.json</b> 的 <b>travel</b> 里填上文件名即可自动显示</p>
+
+      <div class="ring-bar reveal">
+        <button class="ring-play" type="button" aria-label="暂停自动旋转">❚❚</button>
+        <div class="ring-dots"></div>
+        <span class="ring-cap">01 / 06</span>
+      </div>
+
+      <p class="ring-hint reveal">← 按住拖动转一圈 · 也可以点箭头或圆点</p>
+
     </div>
   </section>
 
@@ -3333,51 +3253,23 @@ body > .branch-back-fab.bb-parked{display:flex}
         <p>吃过就忘不掉 · 味觉比照片记得更久</p>
       </div>
 
-      <div class="album-grid">
-        <figure class="album-item reveal" data-slot>
-          <div class="album-ph"><span class="album-ico">◎</span></div>
-          <figcaption>
-            <h4>待补 · 家里的那口锅</h4>
-            <p>最普通的味道最难复刻</p>
-          </figcaption>
-        </figure>
-        <figure class="album-item reveal" data-slot>
-          <div class="album-ph"><span class="album-ico">❁</span></div>
-          <figcaption>
-            <h4>待补 · 街角小店</h4>
-            <p>放学路上总要拐进去看一眼</p>
-          </figcaption>
-        </figure>
-        <figure class="album-item reveal" data-slot>
-          <div class="album-ph"><span class="album-ico">◐</span></div>
-          <figcaption>
-            <h4>待补 · 第一次做菜</h4>
-            <p>成品照片没敢拍，味道倒是记住了</p>
-          </figcaption>
-        </figure>
-        <figure class="album-item reveal" data-slot>
-          <div class="album-ph"><span class="album-ico">✦</span></div>
-          <figcaption>
-            <h4>待补 · 某个甜点</h4>
-            <p>甜的东西总记得久一点</p>
-          </figcaption>
-        </figure>
-        <figure class="album-item reveal" data-slot>
-          <div class="album-ph"><span class="album-ico">◍</span></div>
-          <figcaption>
-            <h4>待补 · 节日餐桌</h4>
-            <p>人多的时候，桌子就显得特别小</p>
-          </figcaption>
-        </figure>
-        <figure class="album-item reveal" data-slot>
-          <div class="album-ph"><span class="album-ico">❋</span></div>
-          <figcaption>
-            <h4>待补 · 深夜加餐</h4>
-            <p>饿的时候什么都好吃</p>
-          </figcaption>
-        </figure>
+      <div class="ring branch-ring reveal" id="ring-food" tabindex="0" role="group"
+           aria-roledescription="3D 环形轮播" aria-label="美食相册">
+        <div class="ring-core" aria-hidden="true"></div>
+        <div class="ring-stage"></div>
+        <div class="ring-halo" aria-hidden="true"></div>
+        <button class="ring-nav ring-prev" type="button" aria-label="上一张">‹</button>
+        <button class="ring-nav ring-next" type="button" aria-label="下一张">›</button>
       </div>
-      <p class="album-tip reveal">把照片放进 <b>assets/</b> 文件夹，并在 <b>assets/albums.json</b> 的 <b>food</b> 里填上文件名即可自动显示</p>
+
+      <div class="ring-bar reveal">
+        <button class="ring-play" type="button" aria-label="暂停自动旋转">❚❚</button>
+        <div class="ring-dots"></div>
+        <span class="ring-cap">01 / 06</span>
+      </div>
+
+      <p class="ring-hint reveal">← 按住拖动转一圈 · 也可以点箭头或圆点</p>
+
     </div>
   </section>
 
@@ -3394,51 +3286,23 @@ body > .branch-back-fab.bb-parked{display:flex}
         <p>没什么大事的日子，事后想起来最好</p>
       </div>
 
-      <div class="album-grid">
-        <figure class="album-item reveal" data-slot>
-          <div class="album-ph"><span class="album-ico">☾</span></div>
-          <figcaption>
-            <h4>待补 · 书桌一角</h4>
-            <p>摊开的笔记和没喝完的水</p>
-          </figcaption>
-        </figure>
-        <figure class="album-item reveal" data-slot>
-          <div class="album-ph"><span class="album-ico">❅</span></div>
-          <figcaption>
-            <h4>待补 · 窗外的天</h4>
-            <p>同一个窗口，每天都不一样</p>
-          </figcaption>
-        </figure>
-        <figure class="album-item reveal" data-slot>
-          <div class="album-ph"><span class="album-ico">≋</span></div>
-          <figcaption>
-            <h4>待补 · 路上随手拍</h4>
-            <p>走神的时候拍下的那些</p>
-          </figcaption>
-        </figure>
-        <figure class="album-item reveal" data-slot>
-          <div class="album-ph"><span class="album-ico">◌</span></div>
-          <figcaption>
-            <h4>待补 · 一次对话</h4>
-            <p>聊天记录也是记忆的一种</p>
-          </figcaption>
-        </figure>
-        <figure class="album-item reveal" data-slot>
-          <div class="album-ph"><span class="album-ico">⌂</span></div>
-          <figcaption>
-            <h4>待补 · 熟悉的地方</h4>
-            <p>走了无数遍，还是想再走一遍</p>
-          </figcaption>
-        </figure>
-        <figure class="album-item reveal" data-slot>
-          <div class="album-ph"><span class="album-ico">✧</span></div>
-          <figcaption>
-            <h4>待补 · 某个瞬间</h4>
-            <p>说不清为什么，但就是想留着</p>
-          </figcaption>
-        </figure>
+      <div class="ring branch-ring reveal" id="ring-daily" tabindex="0" role="group"
+           aria-roledescription="3D 环形轮播" aria-label="日常碎片相册">
+        <div class="ring-core" aria-hidden="true"></div>
+        <div class="ring-stage"></div>
+        <div class="ring-halo" aria-hidden="true"></div>
+        <button class="ring-nav ring-prev" type="button" aria-label="上一张">‹</button>
+        <button class="ring-nav ring-next" type="button" aria-label="下一张">›</button>
       </div>
-      <p class="album-tip reveal">把照片放进 <b>assets/</b> 文件夹，并在 <b>assets/albums.json</b> 的 <b>daily</b> 里填上文件名即可自动显示</p>
+
+      <div class="ring-bar reveal">
+        <button class="ring-play" type="button" aria-label="暂停自动旋转">❚❚</button>
+        <div class="ring-dots"></div>
+        <span class="ring-cap">01 / 06</span>
+      </div>
+
+      <p class="ring-hint reveal">← 按住拖动转一圈 · 也可以点箭头或圆点</p>
+
     </div>
   </section>
 
@@ -4226,27 +4090,39 @@ if (window.matchMedia('(hover:hover) and (pointer:fine)').matches) {
     btn.addEventListener('click', () => closeBranch());
   });
 
-  // 相册槽位：读 assets/albums.json 决定显示哪些照片。
-  // 该清单由「相册生成器」或你手动维护；没有清单时保持优雅占位，零请求零报错。
+  /* 相册清单：assets/albums.json 里写了哪些图，就自动填进对应的环。
+     该清单由「相册生成器」或你手动维护；没有清单时保持优雅占位，零请求零报错。 */
   const SLOT_PREFIX = { s4a:'travel', s4b:'food', s4c:'daily' };
+  const RING_ID     = { s4a:'ring-travel', s4b:'ring-food', s4c:'ring-daily' };
 
   function applyAlbum(id, prefix, files){
-    const sec = document.getElementById(id);
-    if (!sec) return;
-    const items = sec.querySelectorAll('[data-slot]');
-    items.forEach((item, i) => {
-      const name = files[i];
-      if (!name) return;
-      const ph = item.querySelector('.album-ph');
-      if (!ph) return;
-      const cap = item.querySelector('h4');
+    const ringEl = document.getElementById(RING_ID[id]);
+    if (!ringEl) return;
+    /* 环的挂载在主脚本末尾，可能还没执行完 —— 等一下再试 */
+    if (!ringEl.__ring){ setTimeout(() => applyAlbum(id, prefix, files), 120); return; }
+    /* 把清单里的图按顺序套到前 N 张卡上：只改 src 并取消占位态 */
+    const cards = [...ringEl.querySelectorAll('.ring-card')];
+    files.slice(0, cards.length).forEach((name, i) => {
+      const card = cards[i];
+      const face = card.querySelector('.ring-face');
+      const titleEl = face && face.querySelector('.ring-title');
+      const subEl   = face && face.querySelector('.ring-sub');
+      if (!face) return;
+
+      const old = face.querySelector('img');
+      if (old) old.remove();
+
       const img = document.createElement('img');
       img.src = 'assets/' + name;
-      img.alt = cap ? cap.textContent : '相册照片';
+      img.alt = titleEl ? titleEl.textContent : '相册照片';
       img.loading = 'lazy';
       img.decoding = 'async';
-      img.onload = () => { ph.innerHTML = ''; ph.appendChild(img); };
-      // 单张加载失败也不报错，保持占位
+      img.style.zIndex = '2';
+      img.onload = () => { card.classList.remove('ph'); };
+      img.onerror = () => { img.remove(); card.classList.add('ph'); };  // 失败就退回占位，不报错
+      face.insertBefore(img, face.firstChild);
+
+      if (subEl) subEl.textContent = '摘自 · ' + name;
     });
   }
 
@@ -6783,154 +6659,149 @@ document.querySelectorAll('.flip').forEach(card => {  card.addEventListener('cli
   window.__eggAward = award;
 })();
 
+
 /* ==========================================================
    影像记忆 · 3D 环形轮播（orbit 轨道形态）
    ----------------------------------------------------------
-   原生 JS，无任何框架依赖。核心思路与用户给的 React 版一致：
+   原生 JS，无任何框架依赖。「影像记忆」主屏与三个分支相册
+   共用同一个工厂函数 createRing()，只是喂进去的画廊内容不同。
+
+   核心思路（与用户提供的 React 版一致）：
      · 极坐标定位：每张卡按 angle 算 z（纵深）与 x（横向）
-     · 半径公式：radius = chord + (arc - chord) * curve
-       curve 越小越接近正方体转角的「折」，越大越接近正圆
      · orbit 形态：不额外施加 rotateY，卡片永远正对镜头
-     · 惯性 + snap：松手后按速度继续滑，再吸附到最近的角度档位
+     · 跟手拖拽：鼠标拖多少像素，环就转多少像素对应的角度
+     · 惯性 + snap：松手后滑一小段，再吸附到最近的角度档位
+     · 吸附到位后静态停留 1.4 秒，不会被自动旋转立刻带走
    ========================================================== */
-(function(){
-  const ring = document.getElementById('ring');
-  const stage = document.getElementById('ringStage');
-  if (!ring || !stage) return;
+window.createRing = function(opts){
+  const ring  = document.getElementById(opts.root);
+  const stage = ring && ring.querySelector('.ring-stage');
+  if (!ring || !stage) return null;
 
   const REDUCE = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const ITEMS  = opts.items || [];
+  const N      = ITEMS.length;
+  if (!N) return null;
 
-  /* ---------- 展品清单 ----------
-     这是整个轮播唯一需要改的地方。
-
-     · 想放照片：把图片丢进 assets/ 并命名为 ring1.jpg、ring2.jpg …
-       然后把对应项的 phr 改成图片文件名即可（例：src:'assets/ring1.jpg', ph:false）
-     · 默认全部是「占位卡」——不请求任何图片，控制台干干净净。
-     · 两个视频位已经接上了真实文件，可以直接播。 */
-  const ITEMS = [
-    { kind:'photo', ph:true, icon:'▣', title:'照片一', sub:'待补 · assets/ring1.jpg', src:'assets/ring1.jpg' },
-    { kind:'photo', ph:true, icon:'▣', title:'照片二', sub:'待补 · assets/ring2.jpg', src:'assets/ring2.jpg' },
-    { kind:'video',          icon:'▶', title:'美姿令人着迷的邵某人', sub:'点击播放', src:'assets/video1.mp4' },
-    { kind:'photo', ph:true, icon:'▣', title:'照片三', sub:'待补 · assets/ring3.jpg', src:'assets/ring3.jpg' },
-    { kind:'photo', ph:true, icon:'▣', title:'照片四', sub:'待补 · assets/ring4.jpg', src:'assets/ring4.jpg' },
-    { kind:'video',          icon:'▶', title:'第二段回忆', sub:'点击播放', src:'assets/video2.mp4' },
-    { kind:'photo', ph:true, icon:'▣', title:'照片五', sub:'待补 · assets/ring5.jpg', src:'assets/ring5.jpg' },
-    { kind:'photo', ph:true, icon:'▣', title:'照片六', sub:'待补 · assets/ring6.jpg', src:'assets/ring6.jpg' }
-  ];
-
-  const N = ITEMS.length;
-  if (!N) return;
-
-  /* orbit 预设参数（对应用户组件里的 PRESETS.orbit） */
-  const CURVE = 1.35;    // 越大越接近正圆
-  const STEP  = 22;      // 相邻卡片角度步长（度）
-  const TILES = 8;       // 卡面切片数，制造贴近感
+  /* 相邻卡片角度步长。
+     窄屏：让环闭合成整圆（360/N），正面大卡 + 两侧露出边缘（coverflow 观感）；
+     宽屏：用不满一圈的弧，卡片更舒展。 */
+  const narrow = matchMedia('(max-width: 560px)').matches;
+  const STEP = opts.step || (narrow ? Math.round(360 / N) : N <= 6 ? 30 : 26);
+  /* 自转速度用「度/秒」而不是「度/帧」——
+     这样 60Hz、120Hz、以及被节流的后台标签页里转速都一致 */
+  const AUTO_DPS = REDUCE ? 0 : 12;   // 12 度/秒 ≈ 30 秒转一圈，肉眼可见
+  const FRICTION = 0.9;
 
   /* ---------- 建卡 ---------- */
   const cards = ITEMS.map((it, i) => {
     const el = document.createElement('div');
     el.className = 'ring-card' + (it.ph ? ' ph' : '');
     el.dataset.tint = String(i % 4);
-    el.style.transformStyle = 'preserve-3d';
 
-    /* numTiles=1 → 整张卡一个面；未来想加切片只改这一个常量 */
-    for (let t = 0; t < 1; t++){
-      const face = document.createElement('div');
-      face.className = 'ring-face';
-      face.style.display = 'flex';
+    const face = document.createElement('div');
+    face.className = 'ring-face';
 
-      const no = document.createElement('span');
-      no.className = 'ring-no';
-      no.textContent = String(i + 1).padStart(2, '0');
-      face.appendChild(no);
+    const no = document.createElement('span');
+    no.className = 'ring-no';
+    no.textContent = String(i + 1).padStart(2, '0');
+    face.appendChild(no);
 
-      if (it.kind === 'video'){
-        const v = document.createElement('video');
-        v.src = it.src + '?v=4';
-        v.controls = true;
-        v.preload = 'metadata';
-        v.playsInline = true;
-        v.setAttribute('playsinline', '');
-        v.addEventListener('pointerdown', e => e.stopPropagation());
-        v.addEventListener('click', e => e.stopPropagation());
-        face.appendChild(v);
-      } else {
-        /* ph:true = 纯占位卡，不请求任何图片，控制台不会刷 404。
-           ph:false = 已放好真实图片，直接加载。 */
-        if (!it.ph){
-          const img = document.createElement('img');
-          img.alt = it.title;
-          img.decoding = 'async';
-          img.loading = 'lazy';
-          img.addEventListener('error', () => { img.remove(); el.classList.add('ph'); });
-          img.src = it.src + '?v=4';
-          img.style.zIndex = '2';
-          face.appendChild(img);
-        }
-
-        const ico = document.createElement('span');
-        ico.className = 'ring-ico';
-        ico.textContent = it.icon;
-        face.appendChild(ico);
-
-        const h = document.createElement('span');
-        h.className = 'ring-title';
-        h.textContent = it.title;
-        face.appendChild(h);
-
-        const s = document.createElement('span');
-        s.className = 'ring-sub';
-        s.textContent = it.sub;
-        face.appendChild(s);
+    if (it.kind === 'video'){
+      const v = document.createElement('video');
+      v.src = it.src + '?v=4';
+      v.controls = true;
+      v.preload = 'metadata';
+      v.playsInline = true;
+      v.setAttribute('playsinline', '');
+      v.addEventListener('pointerdown', e => e.stopPropagation());
+      v.addEventListener('click', e => e.stopPropagation());
+      face.appendChild(v);
+    } else {
+      /* ph:true = 纯占位卡，不请求任何图片，控制台不会刷 404。
+         ph:false = 已放好真实图片，直接加载。 */
+      if (!it.ph){
+        const img = document.createElement('img');
+        img.alt = it.title || '';
+        img.decoding = 'async';
+        img.loading = 'lazy';
+        img.addEventListener('error', () => { img.remove(); el.classList.add('ph'); });
+        img.src = it.src + '?v=4';
+        img.style.zIndex = '2';
+        face.appendChild(img);
       }
-      el.appendChild(face);
+
+      const ico = document.createElement('span');
+      ico.className = 'ring-ico';
+      ico.textContent = it.icon || '▣';
+      face.appendChild(ico);
+
+      const h = document.createElement('span');
+      h.className = 'ring-title';
+      h.textContent = it.title || '';
+      face.appendChild(h);
+
+      if (it.sub){
+        const s2 = document.createElement('span');
+        s2.className = 'ring-sub';
+        s2.textContent = it.sub;
+        face.appendChild(s2);
+      }
     }
+    el.appendChild(face);
     stage.appendChild(el);
     return el;
   });
 
-  /* ---------- 几何：把角度换算成位移 ---------- */
+  /* ---------- 几何：角度 → 位移 ---------- */
   const rad = d => d * Math.PI / 180;
   let cw = 260, ch = 195, R = 400;
 
+  /* 设计宽度只读一次并缓存到 dataset。
+     ⚠️ 不能每次 measure 都去 getComputedStyle ——
+     那读到的是上一轮 JS 自己写进去的 inline 值，
+     反复 measure 会让卡片一路衰减、越缩越小。
+     也不能「临时 removeProperty 后读」：同一次同步执行里
+     浏览器不保证立刻重算样式，可能读到空值而后退成兜底数字。 */
+  function readWish(){
+    const c = cards[0];
+    if (!c) return 260;
+    if (c.dataset.wish) return parseFloat(c.dataset.wish);
+    /* 首次：卡片还没有 inline --cw，此时 computed 值就是 CSS 断点的真值 */
+    const v = parseFloat(getComputedStyle(c).getPropertyValue('--cw')) || 260;
+    c.dataset.wish = String(v);
+    return v;
+  }
+  let WISH = readWish();
+
   function measure(){
-    /* --- 先按当前断点的 --cw 定基准尺寸 --- */
-    cw = parseFloat(getComputedStyle(cards[0]).getPropertyValue('--cw')) || 260;
-    cw = Math.max(150, Math.min(cw, ring.clientWidth * 0.32));
+    const W = Math.max(240, ring.clientWidth);
+    const SIN = Math.sin(rad(STEP / 2));
+
+    /* 卡片宽度以「设计宽度」为基准（CSS 断点决定，已缓存），夹两条线：
+       ① 不超过 260px
+       ② 让环外沿（R + cw/2）大致装进容器 —— 由 R=(cw+18)/(2·sin) 反推上限。
+          窄屏整圆时允许两侧卡略出框（它们本就在屏幕边缘之外，被裁掉无妨）。 */
+    const allow = narrow ? 0.80 : 0.54;
+    const outerCap = (W * allow - 9 / SIN) / (0.5 + 1 / (2 * SIN));
+    cw = Math.max(120, Math.min(WISH, 260, Math.max(outerCap, 120)));
     ch = Math.round(cw * 0.75);
-
-    /* --- 再算半径：让相邻卡片按 STEP 角刚好不重叠 --- */
-    const half = rad(STEP / 2);
-    R = Math.max((cw + 18) / (2 * Math.sin(half)), cw * 0.9);
-
-    /* --- 半径过大时适当收窄卡片，保证环能装进容器 --- */
-    const limit = Math.min(ring.clientWidth * 0.42, 300);   // 卡片宽度上限
-    if (cw > limit){
-      const k = limit / cw;
-      cw = Math.round(cw * k);
-      ch = Math.round(ch * k);
-      R = Math.max((cw + 18) / (2 * Math.sin(half)), cw * 0.9);
-    }
+    R  = Math.max((cw + 18) / (2 * SIN), cw * 0.75);
 
     cards.forEach(c => {
       c.style.setProperty('--cw', cw + 'px');
       c.style.setProperty('--ch', ch + 'px');
+      c.style.margin = (-ch / 2) + 'px 0 0 ' + (-cw / 2) + 'px';
     });
-    cards.forEach(c => { c.style.margin = (-ch / 2) + 'px 0 0 ' + (-cw / 2) + 'px'; });
   }
 
   /* ---------- 状态 ---------- */
-  let angle = 0;          // 当前环旋转角度（度）
-  let vel = 0;            // 角速度（度/帧）
-  let target = null;      // snap 目标角度
+  let angle = 0, vel = 0, target = null;
   let dragging = false;
-  let autoSpin = !REDUCE; // 自动缓慢旋转
+  let autoSpin = opts.autoSpin !== false && !REDUCE;
   let visible = false;
-  let lastX = 0, lastT = 0;
-  let rafId = 0;
-
-  const AUTO_SPEED = REDUCE ? 0 : 0.16;   // 度/帧，很慢
-  const FRICTION   = 0.94;
+  let lastX = 0, lastT = 0, rafId = 0;
+  let resumeAt = 0;      // 这个时间点之前不恢复自动旋转
 
   function place(){
     const a0 = rad(angle);
@@ -6938,7 +6809,6 @@ document.querySelectorAll('.flip').forEach(card => {  card.addEventListener('cli
       const a  = a0 + rad(i * STEP);
       const z  = Math.cos(a) * R;
       const x  = Math.sin(a) * R;
-      /* 用 z 做深度提示：越靠后越小、越淡、越模糊 */
       const t  = (z + R) / (2 * R);              // 0 = 最远，1 = 最近
       const sc = 0.76 + t * 0.26;
       const op = 0.34 + t * 0.66;
@@ -6947,32 +6817,31 @@ document.querySelectorAll('.flip').forEach(card => {  card.addEventListener('cli
         'scale(' + sc.toFixed(4) + ')';
       el.style.opacity = op.toFixed(3);
       el.style.zIndex  = String(Math.round(1000 + z));
-      /* 只有明显转到后面的卡片才模糊，避免主视觉发虚 */
-      el.style.filter = t < 0.34 ? 'blur(' + ((0.34 - t) * 5).toFixed(2) + 'px)' : 'none';
+      el.style.filter  = t < 0.34 ? 'blur(' + ((0.34 - t) * 5).toFixed(2) + 'px)' : 'none';
       el.style.pointerEvents = t > 0.55 ? 'auto' : 'none';
       el.setAttribute('aria-hidden', t > 0.55 ? 'false' : 'true');
     });
     syncBar();
   }
 
-  /* ---------- 底部：圆点 / 计数 / 高亮 ---------- */
-  const dotsEl = document.getElementById('ringDots');
-  const capEl  = document.getElementById('ringCap');
-  const playEl = document.getElementById('ringPlay');
+  /* ---------- 底部：圆点 / 计数 ---------- */
+  const dotsEl = ring.parentElement.querySelector('.ring-dots');
+  const capEl  = ring.parentElement.querySelector('.ring-cap') ||
+                 document.querySelector('[data-cap="' + opts.root + '"]');
+  const playEl = ring.parentElement.querySelector('.ring-play');
   const dots = [];
   if (dotsEl){
     for (let i = 0; i < N; i++){
       const b = document.createElement('button');
       b.type = 'button';
       b.setAttribute('aria-label', '转到第 ' + (i + 1) + ' 张');
-      b.addEventListener('click', () => { spinTo(i); });
+      b.addEventListener('click', () => spinTo(i));
       dotsEl.appendChild(b);
       dots.push(b);
     }
   }
 
   function frontIndex(){
-    /* 与 place() 一致：取 cos 最大（z 最大）的那张 */
     let best = 0, bestC = -Infinity;
     for (let i = 0; i < N; i++){
       const c = Math.cos(rad(angle + i * STEP));
@@ -6992,38 +6861,47 @@ document.querySelectorAll('.flip').forEach(card => {  card.addEventListener('cli
   }
 
   function spinTo(i){
-    /* 支持越界传参（-1 / N），先归一 */
     i = ((i % N) + N) % N;
-    /* 把第 i 张转到正前方：目标角度取最近的同余解，避免绕远路 */
-    const want = -i * STEP;
+    const want  = -i * STEP;
     const turns = Math.round((angle - want) / 360);
     target = want + turns * 360;
     if (REDUCE){ angle = target; target = null; }
     vel = 0;
   }
 
-  /* ---------- 渲染循环（唯一一条） ---------- */
-  function tick(){
+  /* ---------- 渲染循环 ---------- */
+  let lastFrame = 0;
+  function tick(now){
     rafId = requestAnimationFrame(tick);
-    if (!visible) return;
+    /* 按真实流逝时间算增量，帧率变化不影响转速。
+       上限放到 250ms：后台标签页被节流到 4fps 时也能正确累积，
+       超过 250ms 才算「真的停顿了」，避免切回来瞬间跳一大格 */
+    const dt = lastFrame ? Math.min(250, now - lastFrame) : 16;
+    lastFrame = now;
+    if (!visible){ return; }
 
     if (target !== null){
       const d = target - angle;
-      if (Math.abs(d) < 0.25){ angle = target; target = null; }
-      else { angle += d * 0.14; }
+      if (Math.abs(d) < 0.25){
+        angle = target; target = null;
+        resumeAt = performance.now() + 1400;
+      } else {
+        angle += d * (1 - Math.pow(0.84, dt / 16));   // 帧率无关的缓动
+      }
     } else if (!dragging){
-      const spinning = autoSpin && !ring.dataset.hover;
-      angle += vel + (spinning ? AUTO_SPEED : 0);
-      vel *= FRICTION;
+      const cooled   = performance.now() < resumeAt;
+      const spinning = autoSpin && !cooled && !ring.dataset.hover;
+      angle += vel * (dt / 16) + (spinning ? AUTO_DPS * dt / 1000 : 0);
+      vel *= Math.pow(FRICTION, dt / 16);
       if (Math.abs(vel) < 0.004) vel = 0;
     }
     place();
   }
 
-  /* ---------- 交互：拖拽 ---------- */
+  /* ---------- 拖拽：跟手感 ---------- */
   function down(e){
     if (REDUCE) return;
-    /* 点在箭头 / 播放键上时不进入拖拽，否则 click 会被 pointer capture 吞掉 */
+    /* 点在箭头 / 播放键 / 圆点上时不进入拖拽，否则 click 会被 pointer capture 吞掉 */
     if (e.target.closest('.ring-nav,.ring-play,.ring-dots')) return;
     dragging = true;
     target = null;
@@ -7032,31 +6910,31 @@ document.querySelectorAll('.flip').forEach(card => {  card.addEventListener('cli
     lastX = e.clientX;
     lastT = performance.now();
     try { ring.setPointerCapture(e.pointerId); } catch(err){}
-    document.querySelectorAll('.ring-face video').forEach(v => { try { v.pause(); } catch(err){} });
+    ring.querySelectorAll('video').forEach(v => { try { v.pause(); } catch(err){} });
   }
   function move(e){
     if (!dragging) return;
     const now = performance.now();
     const dt  = Math.max(1, now - lastT);
     const dx  = e.clientX - lastX;
-    const k   = 0.36 * (260 / Math.max(180, cw));   // 卡越小，转得越灵
+    /* 跟手感：拖多少像素，环就转过多少像素对应的角度
+       （除以半径把像素换算成弧度，拖起来像真的在「拧」这个环） */
+    const k = 180 / (Math.PI * Math.max(R, 120));
     angle += dx * k;
-    vel = (dx * k) * (16 / dt) * 0.5;               // 换算成每帧速度
-    vel = Math.max(-14, Math.min(14, vel));
+    vel = Math.min(9, Math.max(-9, (dx * k) * (16 / dt)));
     lastX = e.clientX;
-    lastT = now;
+    lastT  = now;
     place();
   }
   function up(){
     if (!dragging) return;
     dragging = false;
     ring.classList.remove('dragging');
-    /* 松手：按当前角速度滑一段，然后吸附到最近档位 */
-    const slide = vel * 14;
-    const want  = angle + slide;
-    const nearest = Math.round(want / STEP) * STEP;
-    target = nearest;
-    vel = 0;
+    /* 松手：按角速度惯性滑一小段，再吸附到最近档位 */
+    const want    = angle + vel * 9;
+    target        = Math.round(want / STEP) * STEP;
+    vel           = 0;
+    resumeAt      = performance.now() + 1400;
   }
 
   if (!REDUCE){
@@ -7064,7 +6942,6 @@ document.querySelectorAll('.flip').forEach(card => {  card.addEventListener('cli
     ring.addEventListener('pointermove', move);
     ring.addEventListener('pointerup', up);
     ring.addEventListener('pointercancel', up);
-    /* 卡片正对你时点一下 = 转到它 */
     cards.forEach((el, i) => {
       el.addEventListener('click', e => {
         if (e.target.closest('video')) return;
@@ -7077,12 +6954,10 @@ document.querySelectorAll('.flip').forEach(card => {  card.addEventListener('cli
     ring.classList.add('flat');
   }
 
-  document.getElementById('ringPrev')?.addEventListener('click', () => {
-    spinTo(frontIndex() - 1 < 0 ? N - 1 : frontIndex() - 1);
-  });
-  document.getElementById('ringNext')?.addEventListener('click', () => {
-    spinTo((frontIndex() + 1) % N);
-  });
+  const prevBtn = ring.parentElement.querySelector('.ring-prev');
+  const nextBtn = ring.parentElement.querySelector('.ring-next');
+  prevBtn?.addEventListener('click', () => spinTo(frontIndex() - 1));
+  nextBtn?.addEventListener('click', () => spinTo(frontIndex() + 1));
 
   /* ---------- 自动旋转开关 ---------- */
   function setPlay(on){
@@ -7093,9 +6968,9 @@ document.querySelectorAll('.flip').forEach(card => {  card.addEventListener('cli
     }
   }
   playEl?.addEventListener('click', () => setPlay(!autoSpin));
-  setPlay(!REDUCE);
+  setPlay(opts.autoSpin !== false && !REDUCE);
 
-  /* 鼠标悬停 / 触摸时暂停自动旋转，方便看清 */
+  /* 悬停 / 聚焦时暂停自动旋转，方便看清 */
   ring.addEventListener('pointerenter', () => { if (!dragging) ring.dataset.hover = '1'; });
   ring.addEventListener('pointerleave', () => { delete ring.dataset.hover; });
   ring.addEventListener('focus', () => { ring.dataset.hover = '1'; });
@@ -7103,11 +6978,9 @@ document.querySelectorAll('.flip').forEach(card => {  card.addEventListener('cli
 
   /* 键盘：左右方向键转环 */
   ring.addEventListener('keydown', e => {
-    if (e.key === 'ArrowLeft'){ e.preventDefault(); spinTo(frontIndex() - 1 < 0 ? N - 1 : frontIndex() - 1); }
-    else if (e.key === 'ArrowRight'){ e.preventDefault(); spinTo((frontIndex() + 1) % N); }
+    if (e.key === 'ArrowLeft'){ e.preventDefault(); spinTo(frontIndex() - 1); }
+    else if (e.key === 'ArrowRight'){ e.preventDefault(); spinTo(frontIndex() + 1); }
   });
-
-  /* 悬停暂停逻辑已并入 tick()，无需额外计时器 */
 
   /* ---------- 点击放大：正对你的卡片单独成焦点 ---------- */
   function ringshot(el, i){
@@ -7115,11 +6988,10 @@ document.querySelectorAll('.flip').forEach(card => {  card.addEventListener('cli
       [{ transform: el.style.transform + ' translateZ(70px)' }, { transform: el.style.transform }],
       { duration: 620, easing: 'cubic-bezier(.22,1,.36,1)' }
     );
-    /* 顺手把对应的圆点点亮 */
     dots.forEach((d, k) => d.classList.toggle('on', k === i));
   }
 
-  /* ---------- 视口可见才跑，切屏后自动停 ---------- */
+  /* ---------- 视口可见才跑 ---------- */
   if ('IntersectionObserver' in window){
     new IntersectionObserver(es => {
       es.forEach(en => { visible = en.isIntersecting; });
@@ -7132,20 +7004,21 @@ document.querySelectorAll('.flip').forEach(card => {  card.addEventListener('cli
   let rzT = 0;
   window.addEventListener('resize', () => {
     clearTimeout(rzT);
-    rzT = setTimeout(() => { measure(); place(); }, 160);
+    rzT = setTimeout(() => {
+      WISH = readWish();       // 断点可能变了，设计宽度要重新读
+      measure(); place();
+    }, 160);
   });
 
   measure();
   place();
-  spinTo(0);                        // 开场让第 1 张站正前方
+  spinTo(opts.startAt || 0);
   if (target !== null){ angle = target; target = null; }
   place();
   syncBar(true);
-
-  /* 点火：渲染循环必须显式启动一次（tick 内部只负责自我续帧） */
   rafId = requestAnimationFrame(tick);
 
-  window.__ring = {
+  const api = {
     spinTo,
     get angle(){ return angle; },
     get R(){ return R; },
@@ -7153,7 +7026,79 @@ document.querySelectorAll('.flip').forEach(card => {  card.addEventListener('cli
     get front(){ return frontIndex(); },
     items: ITEMS
   };
+  ring.__ring = api;
+  return api;
+};
+
+/* ==========================================================
+   挂载四个环：影像记忆主屏 + 三个分支相册
+   ----------------------------------------------------------
+   想换素材：改下面的 PHOTO()/V() 调用即可。
+   ph:true = 占位卡（不请求图片）；改成 ph:false 才加载真实图片。
+   ========================================================== */
+(function mountRings(){
+  /* 小工具：生成一个占位照片项 */
+  const PHOTO = (n, file, title, sub) => ({
+    kind:'photo', ph:true, icon:'▣',
+    title: title || ('照片' + n),
+    sub: sub || ('待补 · assets/' + file),
+    src: 'assets/' + file
+  });
+  const VIDEO = (file, title) => ({
+    kind:'video', icon:'▶', title, sub:'点击播放', src:'assets/' + file
+  });
+
+  /* ---------- ① 影像记忆主屏 ---------- */
+  window.__ring = window.createRing({
+    root: 'ring',
+    items: [
+      PHOTO(1, 'ring1.jpg'),
+      PHOTO(2, 'ring2.jpg'),
+      VIDEO('video1.mp4', '美姿令人着迷的邵某人'),
+      PHOTO(3, 'ring3.jpg'),
+      PHOTO(4, 'ring4.jpg'),
+      VIDEO('video2.mp4', '第二段回忆'),
+      PHOTO(5, 'ring5.jpg'),
+      PHOTO(6, 'ring6.jpg')
+    ]
+  });
+
+  /* ---------- ②③④ 三个分支相册 ---------- */
+  const BRANCH = {
+    'ring-travel': {
+      files: ['travel1.jpg','travel2.jpg','travel3.jpg','travel4.jpg','travel5.jpg','travel6.jpg'],
+      titles: ['泰山 · 与文人共游','待补 · 下一段旅程','待补 · 海边的夏天',
+               '待补 · 城市一夜','待补 · 某次远行','待补 · 一个清晨'],
+      icons: ['⛰','≋','☼','◇','⌘','⊙']
+    },
+    'ring-food': {
+      files: ['food1.jpg','food2.jpg','food3.jpg','food4.jpg','food5.jpg','food6.jpg'],
+      titles: ['待补 · 第一口惊艳','待补 · 深夜小摊','待补 · 家的味道',
+               '待补 · 一路吃过去','待补 · 甜的','待补 · 冬天那锅'],
+      icons: ['◎','✿','⌂','≈','◍','❄']
+    },
+    'ring-daily': {
+      files: ['daily1.jpg','daily2.jpg','daily3.jpg','daily4.jpg','daily5.jpg','daily6.jpg'],
+      titles: ['待补 · 桌上的光','待补 · 路过','待补 · 一个下午',
+               '待补 · 窗外','待补 · 没什么大事','待补 · 随手一拍'],
+      icons: ['✦','◇','☁','⌘','∿','◌']
+    }
+  };
+
+  Object.keys(BRANCH).forEach(rootId => {
+    const cfg = BRANCH[rootId];
+    window.createRing({
+      root: rootId,
+      items: cfg.files.map((f, i) => ({
+        kind:'photo', ph:true, icon: cfg.icons[i],
+        title: cfg.titles[i],
+        sub: '待补 · assets/' + f,
+        src: 'assets/' + f
+      }))
+    });
+  });
 })();
+
 </script>
 </body>
 </html>
