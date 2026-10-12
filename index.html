@@ -2441,6 +2441,7 @@ body > .branch-back-fab.bb-parked{display:flex}
   display:flex;flex-direction:column;
   align-items:center;justify-content:center;
   gap:9px;text-align:center;padding:14px;
+  backface-visibility:hidden;-webkit-backface-visibility:hidden; /* 转到背面的卡不显示镜像 */
 }
 .ring-face::after{               /* 卡面斜向高光，增强立体感 */
   content:"";position:absolute;inset:0;pointer-events:none;
@@ -6866,11 +6867,10 @@ window.createRing = function(opts){
 
   function place(){
     const a0 = rad(angle);
-    /* 后排卡片在屏幕上必然和前排横向交叠（3D 环的固有投影）。
-       解决办法不是消除重叠，而是把它变成"明显的层次"：
-       ① 后排整体上移、前排整体下沉 → 竖向错开，不再糊成一坨
-       ② 后排明显缩小、变淡、加模糊 → 一眼看出它在远处
-       ③ 前排卡加投影，压在后面的卡上 → 前后关系清楚 */
+    /* 真 3D 环：卡片不再是"永远正对你的贴纸"（那是平面感的根源），
+       而是像挂在旋转木马上——每张卡跟着自己所在的方位角转动：
+       正面的卡正对你，侧面的卡斜过去，背面的卡转到后面去。
+       rotateY(-方位角) 就是"让卡面始终朝向环外"。 */
     const LIFT = narrow ? 26 : 40;   // 竖向错位幅度
     cards.forEach((el, i) => {
       const a  = a0 + rad(i * STEP);
@@ -6878,10 +6878,12 @@ window.createRing = function(opts){
       const x  = Math.sin(a) * R;
       const t  = (z + R) / (2 * R);              // 0 = 最远，1 = 最近
       const y  = (1 - t) * -LIFT;                /* 越远越往上飘 */
-      const sc = 0.68 + t * 0.34;                /* 景深拉开：后排明显更小 */
-      const op = 0.30 + t * 0.70;
+      const sc = 0.72 + t * 0.30;                /* 景深拉开：后排明显更小 */
+      const op = 0.28 + t * 0.72;
+      const ry = -(a0 + i * STEP);               /* 卡面朝向环外，立体感的核心 */
       el.style.transform =
         'translate3d(' + x.toFixed(2) + 'px, ' + y.toFixed(2) + 'px, ' + z.toFixed(2) + 'px) ' +
+        'rotateY(' + ry.toFixed(2) + 'deg) ' +
         'scale(' + sc.toFixed(4) + ')';
       el.style.opacity = op.toFixed(3);
       el.style.zIndex  = String(Math.round(1000 + z));
