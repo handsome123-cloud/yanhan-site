@@ -41,6 +41,44 @@ window.__setOwner = function(on){
 };
 
 /* ==========================================================
+   0.5 WebP 支持检测 + 图片地址改写
+   ----------------------------------------------------------
+   站内所有照片都同时放了 .jpg（兜底）和 .webp（体积约为 1/4）。
+   页面里写的永远是 .jpg，真正赋 src 时经过这里换掉后缀 ——
+   这样 HTML 不用写成 <picture>，改一处就能覆盖全部图片。
+
+   浏览器不支持 WebP 时返回原 .jpg，不会出现空白图。
+   ========================================================== */
+window.__WEBP = (function(){
+  try {
+    const c = document.createElement('canvas');
+    return c.toDataURL('image/webp').indexOf('data:image/webp') === 0;
+  } catch(e){ return false; }
+})();
+
+/* 把 assets/xxx.jpg?v=N 换成 assets/xxx.webp?v=N
+   已经是 webp / 非 jpg 的地址原样返回，避免误伤音频、视频。
+   share-card 例外：它是社交平台分享卡，只有 jpg，且平台不认 webp。 */
+window.__webpUrl = function(u){
+  if (!u || !window.__WEBP) return u;
+  if (u.indexOf('share-card') !== -1) return u;
+  return u.replace(/\.jpe?g(\?|#|$)/i, '.webp$1');
+};
+
+/* 给一个 <img> 赋地址：自动挑 webp / jpg，并对 webp 加载失败做兜底。
+   失败兜底很重要 —— 有些老浏览器的 canvas 支持 webp，但 <img> 其实不行。 */
+window.__setImg = function(img, url){
+  if (!img || !url) return;
+  const w = window.__webpUrl(url);
+  if (w === url){ img.src = url; return; }
+  img.addEventListener('error', function onErr(){
+    img.removeEventListener('error', onErr);
+    img.src = url;                 // 退回 jpg
+  });
+  img.src = w;
+};
+
+/* ==========================================================
    0. 明暗主题（自由切换 + 本地记忆）
    ========================================================== */
 (function initTheme(){
@@ -272,7 +310,7 @@ function armSlideImgs(sl){
   if (!pend.length) return;
   sl.__imgsArmed = true;
   pend.forEach(img => {
-    img.src = img.dataset.src;
+    window.__setImg(img, img.dataset.src);   // 自动挑 webp / jpg
     img.removeAttribute('data-src');
   });
 }
@@ -316,7 +354,7 @@ function openBranch(el){
   if (!el.__srcDone){
     el.__srcDone = true;
     el.querySelectorAll('img[data-src]').forEach(img => {
-      img.src = img.dataset.src;
+      window.__setImg(img, img.dataset.src);   // 自动挑 webp / jpg
       img.removeAttribute('data-src');
     });
   }
@@ -960,7 +998,7 @@ document.querySelectorAll('.flip').forEach(card => {  card.addEventListener('cli
   }
 
   const bgImg = new Image();
-  bgImg.src = 'assets/game-scene.jpg?v=5';
+  bgImg.src = window.__webpUrl('assets/game-scene.jpg?v=5');
 
   function drawBg(){
     ctx.clearRect(0,0,W,H);
@@ -4230,7 +4268,7 @@ window.createRing = function(opts){
          而整环一次性加载已经足够省 —— 三个分支环（人像 8 张约 3MB、
          日常 6 个视频）在没被打开之前，一张图都不会下载。 */
       if (el.__img && el.__img.dataset.src && imgArmed){
-        el.__img.src = el.__img.dataset.src;
+        window.__setImg(el.__img, el.__img.dataset.src);   // 自动挑 webp / jpg
         el.__img.removeAttribute('data-src');
       }
     });
