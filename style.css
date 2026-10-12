@@ -48,7 +48,10 @@
   --lead-shadow:0 1px 0 rgba(255,255,255,.6);
 
   --serif:"Noto Serif SC", Georgia, "Songti SC", serif;
-  --sans:"Noto Sans SC", -apple-system, "PingFang SC", sans-serif;
+  /* 不请求 Noto Sans SC 的 Web 字体：中文按 unicode-range 会切成几十个分片，
+     为了全站仅 2 处用法付 ~1MB 代价不划算。直接用系统无衬线（手机上就是
+     苹方/鸿蒙/思源黑体，加载零成本、观感还更好）。 */
+  --sans:-apple-system, BlinkMacSystemFont, "PingFang SC", "HarmonyOS Sans SC", "Microsoft YaHei", system-ui, sans-serif;
 }
 
 /* ==========================================================
@@ -140,8 +143,13 @@ body{
    ========================================================== */
 .bg-texture{
   position:fixed;inset:0;z-index:0;pointer-events:none;
-  background:url("assets/aura-texture.png?v=4") center/cover no-repeat;
+  /* 2.1MB 的 PNG 压成 15KB WebP（JPG 42KB 兜底），视觉上肉眼无差别。
+     这张图本身是大面积模糊光晕，1024 宽完全够用。 */
+  background:url("assets/aura-texture-1024.jpg?v=5") center/cover no-repeat;
   opacity:var(--texture-op);
+}
+@supports (background-image: url("x.webp")){
+  .bg-texture{background-image:url("assets/aura-texture-1024.webp?v=5")}
 }
 .aura{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden}
 .aura span{
@@ -2054,6 +2062,12 @@ html[data-theme="dark"] #s7::after{
   pointer-events:none;
   transform:scale(.94) translateY(2vh);
   filter:blur(10px);
+  /* ⚠️ content-visibility:auto —— 没打开的分支屏，浏览器会直接跳过其内容：
+     不布局、不绘制、也不加载里面的图片（s4a 有 16 张图约 4.5MB）。
+     仅靠 visibility:hidden 是不够的，那样图片照样会被下载。
+     打开时（.open）恢复 normal，动画和渲染一切照旧。 */
+  content-visibility:auto;
+  contain-intrinsic-size:auto 900px;
   transition:opacity .55s cubic-bezier(.22,1,.36,1),
              transform .65s cubic-bezier(.22,1,.36,1),
              filter .55s cubic-bezier(.22,1,.36,1),
@@ -2065,6 +2079,7 @@ html[data-theme="dark"] #s7::after{
   pointer-events:auto;
   transform:none;
   filter:none;
+  content-visibility:visible;
   transition-delay:0s;
   /* 自身不透明，完整盖住底下的影像记忆屏 */
   background:var(--paper);
