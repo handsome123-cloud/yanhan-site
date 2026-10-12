@@ -1745,6 +1745,9 @@ html[data-theme="dark"] .jelly-stage::before{
   background:url("assets/game-scene.jpg?v=5") center center / cover no-repeat;
   pointer-events:none;
 }
+@supports (background-image: url("x.webp")){
+  #s7::before{background-image:url("assets/game-scene.webp?v=5")}
+}
 /* 白色柔纱：让前景文字与画布保持可读性 */
 #s7::after{
   content:"";position:absolute;inset:0;z-index:1;
@@ -2247,6 +2250,9 @@ body > .branch-back-fab.bb-parked{display:flex}
   filter:grayscale(1) contrast(1.05) brightness(var(--photo-lum));
   pointer-events:none;
 }
+@supports (background-image: url("x.webp")){
+  .hero-slide::before{background-image:url("assets/bg-home.webp?v=4")}
+}
 .hero-slide::after{
   content:"";position:absolute;inset:0;z-index:1;pointer-events:none;
   /* 仅中心轻微提亮，保证文字可读，四周让图透出来 */
@@ -2266,6 +2272,9 @@ body > .branch-back-fab.bb-parked{display:flex}
   opacity:var(--photo-op-end);
   filter:brightness(var(--photo-lum));
   pointer-events:none;
+}
+@supports (background-image: url("x.webp")){
+  #s8::before{background-image:url("assets/bg-end.webp?v=4")}
 }
 #s8::after{
   content:"";position:absolute;inset:0;z-index:1;pointer-events:none;
