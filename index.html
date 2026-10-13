@@ -824,6 +824,30 @@
   </p>
 </footer>
 
+<!-- ====== 站长登录（手机端进站长模式用） ======
+     手机上没有地址栏，敲不出 ?owner=1，所以给一个入口：
+     点星空屏右下角的 ✧ 小点 → 输密码 → 记住身份。
+     密码不在代码里明文存放，只比对 SHA-256 哈希（见 main.js）。 -->
+<div class="owner-modal" id="ownerModal" role="dialog" aria-modal="true" aria-labelledby="ownerTitle">
+  <div class="owner-box">
+    <p class="owner-kicker">站 长 入 口</p>
+    <h3 id="ownerTitle">输入密码</h3>
+    <p class="owner-sub">验证一次，这台设备就会记住你</p>
+    <input class="owner-input" id="ownerInput" type="password"
+           inputmode="numeric" autocomplete="off" placeholder="• • • • • • • •"
+           aria-label="站长密码">
+    <p class="owner-err" id="ownerErr" role="alert" aria-live="polite"></p>
+    <div class="owner-actions">
+      <button class="owner-ok" id="ownerOk" type="button">进入</button>
+      <button class="owner-cancel" id="ownerCancel" type="button">取消</button>
+    </div>
+    <button class="owner-out" id="ownerOut" type="button" hidden>退出站长模式</button>
+  </div>
+</div>
+
+<!-- 站长入口小把手：只在星空屏出现，坐在右下角翻页控件左边 -->
+<button class="owner-key" id="ownerKey" type="button" aria-label="站长入口" title="站长入口">✧</button>
+
 <script src="main.js"></script>
 </body>
 </html>
