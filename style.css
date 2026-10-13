@@ -3672,18 +3672,26 @@ html.is-owner .owner-key{color:var(--halo-butter);border-color:rgba(247,232,168,
 }
 .dm-item{
   position:absolute;left:100%;white-space:nowrap;
-  padding:5px 16px;border-radius:100px;
-  font-size:.76rem;letter-spacing:.05em;
-  color:rgba(255,255,255,.82);
-  background:rgba(255,255,255,.07);
-  border:1px solid rgba(255,255,255,.13);
-  -webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);
+  padding:4px 14px;border-radius:100px;
+  font-size:.74rem;letter-spacing:.05em;
+  /* 弹幕是氛围，不该抢星星的戏：
+     底色压到几乎透明，只留一圈极淡描边把文字托住。 */
+  color:rgba(255,255,255,.74);
+  background:rgba(255,255,255,.045);
+  border:1px solid rgba(255,255,255,.09);
+  -webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px);
   pointer-events:auto;cursor:default;
   animation:dmFly linear forwards;
   will-change:transform;
 }
-.dm-item b{font-weight:500;color:var(--halo-butter);margin-right:7px;font-size:.72rem}
-.dm-item:hover{animation-play-state:paused;background:rgba(255,255,255,.14)}
+.dm-item b{font-weight:500;color:rgba(247,232,168,.88);margin-right:7px;font-size:.7rem}
+/* 悬停才"提亮"——平时安静飘过，想看清楚了把鼠标放上去 */
+.dm-item:hover{
+  animation-play-state:paused;
+  color:rgba(255,255,255,.96);
+  background:rgba(255,255,255,.13);
+  border-color:rgba(255,255,255,.24);
+}
 @keyframes dmFly{
   from{transform:translateX(0)}
   to{transform:translateX(calc(-100% - 100vw))}
@@ -3732,3 +3740,78 @@ html.draw-mode{overflow:hidden}
    窄屏 12 卡的观感修复在 JS：place() 里放宽外沿出血、加大斜转角、
    压低后排透明度（搜 "12 卡 + 窄屏"）。 */
 #s4 .ring-card{transition:opacity .3s,filter .3s}
+
+/* ==========================================================
+   弹幕开关（星空屏）
+   ----------------------------------------------------------
+   默认关闭。弹幕会从星空上飘过，但有人喜欢热闹、有人觉得挡视线，
+   所以做成显式开关 —— 想看的自己打开，不想看的完全不受打扰。
+   ========================================================== */
+.dm-toggle-row{
+  display:flex;align-items:center;justify-content:center;gap:12px;
+  flex-wrap:wrap;
+  margin:14px 0 4px;
+}
+.dm-toggle{
+  display:inline-flex;align-items:center;gap:10px;
+  padding:8px 16px 8px 12px;border-radius:100px;cursor:pointer;
+  font-family:inherit;font-size:.78rem;letter-spacing:.08em;
+  color:rgba(255,255,255,.72);
+  border:1px solid rgba(255,255,255,.16);
+  background:rgba(255,255,255,.06);
+  -webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);
+  transition:border-color .3s,background .3s,color .3s,transform .3s;
+}
+.dm-toggle:hover{border-color:rgba(255,255,255,.34);background:rgba(255,255,255,.12);color:#fff}
+.dm-toggle:active{transform:scale(.98)}
+.dm-toggle:focus-visible{outline:2px solid var(--halo-lilac);outline-offset:2px}
+
+/* 开关轨道 */
+.dmt-track{
+  position:relative;flex:none;
+  width:34px;height:18px;border-radius:100px;
+  background:rgba(255,255,255,.14);
+  border:1px solid rgba(255,255,255,.16);
+  transition:background .32s,border-color .32s;
+}
+.dmt-knob{
+  position:absolute;top:1.5px;left:1.5px;
+  width:13px;height:13px;border-radius:50%;
+  background:rgba(255,255,255,.62);
+  box-shadow:0 2px 6px -2px rgba(0,0,0,.5);
+  transition:transform .32s cubic-bezier(.34,1.4,.64,1),background .32s;
+}
+.dm-toggle[aria-checked="true"]{
+  color:#fff;
+  border-color:rgba(247,232,168,.42);
+  background:rgba(247,232,168,.12);
+}
+.dm-toggle[aria-checked="true"] .dmt-track{
+  background:linear-gradient(135deg,var(--halo-butter),var(--halo-peach));
+  border-color:transparent;
+}
+.dm-toggle[aria-checked="true"] .dmt-knob{
+  transform:translateX(16px);
+  background:#fff;
+}
+.dmt-label{font-weight:400}
+.dmt-state{
+  min-width:1.6em;text-align:center;
+  font-style:normal;font-size:.72rem;letter-spacing:.14em;
+  color:rgba(255,255,255,.46);
+  transition:color .3s;
+}
+.dm-toggle[aria-checked="true"] .dmt-state{color:var(--halo-butter)}
+
+.dmt-hint{
+  font-size:.68rem;letter-spacing:.06em;
+  color:rgba(255,255,255,.34);
+  transition:color .3s,opacity .3s;
+}
+.dm-toggle:hover ~ .dmt-hint{color:rgba(255,255,255,.5)}
+
+@media(max-width:560px){
+  .dm-toggle-row{gap:8px;margin:12px 0 2px}
+  .dm-toggle{padding:7px 13px 7px 10px;font-size:.74rem}
+  .dmt-hint{font-size:.63rem}
+}
