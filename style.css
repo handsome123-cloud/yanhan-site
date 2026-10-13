@@ -2495,8 +2495,8 @@ body > .branch-back-fab.bb-parked{display:flex}
 .ring{
   position:relative;
   /* 高度给足：perspective 1100px 会把正面卡投影放大约 1.5 倍，
-     容器太矮卡会被裁底边。clamp 上限提到 380px。 */
-  height:clamp(240px,36vh,380px);
+     容器太矮卡会被裁底边。卡片放大后这里也要跟着放宽。 */
+  height:clamp(260px,42vh,440px);
   margin-top:4px;
   border-radius:26px;
   overflow:hidden;
@@ -2963,4 +2963,95 @@ body > .branch-back-fab.bb-parked{display:flex}
   .reveal{opacity:1;transform:none}
   .slide .reveal{opacity:1;transform:none}
   .cursor-glow,.trail-dot{display:none}
+}
+/* ==========================================================
+   图片放大查看器（Lightbox）
+   ----------------------------------------------------------
+   点环里正面的卡 → 打开这一张的大图。
+   支持：再点一下 / 按 Esc / 点右上角叉 关闭；
+         左右方向键 或 点两侧箭头 在同一个环内翻页。
+   触摸板左右滑动也能翻。
+   ========================================================== */
+
+/* 大图打开时锁住页面滚动，不然在相册环上滑一下会连着翻屏。 */
+html.lb-mode{overflow:hidden}
+
+.lb{
+  position:fixed;inset:0;z-index:9000;
+  display:flex;align-items:center;justify-content:center;
+  padding:clamp(14px,3vw,40px);
+  background:rgba(28,22,44,.72);
+  -webkit-backdrop-filter:blur(18px) saturate(1.1);
+  backdrop-filter:blur(18px) saturate(1.1);
+  opacity:0;pointer-events:none;
+  transition:opacity .32s cubic-bezier(.22,1,.36,1);
+}
+.lb.open{opacity:1;pointer-events:auto}
+
+.lb-fig{
+  position:relative;margin:0;max-width:100%;max-height:100%;
+  display:flex;flex-direction:column;align-items:center;gap:12px;
+  transform:scale(.94);opacity:0;
+  transition:transform .38s cubic-bezier(.22,1,.36,1),opacity .3s;
+}
+.lb.open .lb-fig{transform:scale(1);opacity:1}
+
+.lb-img{
+  max-width:min(92vw,1100px);
+  max-height:min(74vh,760px);
+  width:auto;height:auto;display:block;
+  border-radius:18px;
+  box-shadow:0 40px 90px -30px rgba(10,6,24,.7);
+  background:linear-gradient(135deg,rgba(255,255,255,.14),rgba(255,255,255,.06));
+}
+.lb-cap{
+  color:rgba(255,255,255,.94);text-align:center;line-height:1.6;
+  text-shadow:0 2px 12px rgba(0,0,0,.5);
+}
+.lb-cap b{display:block;font-size:clamp(.95rem,2.4vw,1.12rem);font-weight:500}
+.lb-cap i{font-style:normal;font-size:.78rem;opacity:.72}
+
+/* 关闭键 */
+.lb-x{
+  position:absolute;top:clamp(10px,2.4vw,22px);right:clamp(10px,2.4vw,22px);
+  width:44px;height:44px;border:0;border-radius:50%;cursor:pointer;
+  font-size:1.15rem;line-height:1;color:#fff;
+  background:rgba(255,255,255,.14);
+  -webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);
+  transition:background .25s,transform .25s;
+}
+.lb-x:hover{background:rgba(255,255,255,.26);transform:rotate(90deg)}
+
+/* 左右翻页 */
+.lb-nav{
+  position:absolute;top:50%;transform:translateY(-50%);
+  width:50px;height:50px;border:0;border-radius:50%;cursor:pointer;
+  font-size:1.5rem;line-height:1;color:#fff;
+  background:rgba(255,255,255,.13);
+  -webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);
+  transition:background .25s,transform .25s;
+}
+.lb-nav:hover{background:rgba(255,255,255,.26)}
+.lb-prev{left:clamp(6px,1.6vw,20px)}
+.lb-next{right:clamp(6px,1.6vw,20px)}
+.lb-prev:hover{transform:translateY(-50%) translateX(-3px)}
+.lb-next:hover{transform:translateY(-50%) translateX(3px)}
+.lb-nav[hidden]{display:none}
+
+/* 计数 / 提示 */
+.lb-meta{
+  position:absolute;left:0;right:0;bottom:clamp(10px,2.6vw,24px);
+  text-align:center;color:rgba(255,255,255,.6);
+  font-size:.74rem;letter-spacing:.1em;
+  pointer-events:none;
+}
+
+/* 环里正面卡加个「可点开」的暗示 */
+.ring-card{cursor:pointer}
+.ring-card.ph{cursor:grab}
+
+@media(max-width:560px){
+  .lb-img{max-height:66vh;border-radius:14px}
+  .lb-nav{width:42px;height:42px;font-size:1.3rem}
+  .lb-x{width:38px;height:38px}
 }
