@@ -4184,7 +4184,10 @@ window.createRing = function(opts){
        比半个卡宽大，前后排就不会糊在一起。 */
     const allow = narrow ? 0.86 : 0.90;
     const outerCap = (W * allow) / (0.8 / SIN + 0.5);
-    cw = Math.max(96, Math.min(WISH, narrow ? 170 : 200, Math.max(outerCap, 96)));
+    /* 尺寸上限：正面卡会被 perspective 放大，place() 里的 scFront 已经保证
+       放大后仍装得进容器，所以这里可以给得宽一些 —— 卡越大越看得清。
+       12 张卡时投影更密，靠 scFront 压缩放来避免糊在一起，不会互相重叠。 */
+    cw = Math.max(96, Math.min(WISH, narrow ? 215 : 255, Math.max(outerCap, 96)));
     ch = Math.round(cw * 0.75);
     chBase = ch;    /* 供 place() 反推正面卡最大缩放 */
     R  = Math.max(0.8 * cw / SIN, cw * 0.9);
@@ -4202,6 +4205,7 @@ window.createRing = function(opts){
   let autoSpin = opts.autoSpin !== false && !REDUCE;
   let visible = false;
   let lastX = 0, lastT = 0, rafId = 0;
+  let downX = 0, moved = 0;   /* 本次按下的起点与累计位移，用于区分点击 / 拖拽 */
   let resumeAt = 0;      // 这个时间点之前不恢复自动旋转
   /* 用户是否真的动过这个环。
      视频卡有近 3MB，静止展示时不该下载；
@@ -4373,6 +4377,10 @@ window.createRing = function(opts){
     ring.classList.add('dragging');
     lastX = e.clientX;
     lastT = performance.now();
+    /* 记住按下时的位置：松手时如果几乎没移动，才算「点击」，否则算「拖拽」。
+       不加这个判断的话，转完一圈松手会顺手把大图打开。 */
+    downX = e.clientX;
+    moved = 0;
     try { ring.setPointerCapture(e.pointerId); } catch(err){}
     ring.querySelectorAll('video').forEach(v => { try { v.pause(); } catch(err){} });
   }
@@ -4381,6 +4389,7 @@ window.createRing = function(opts){
     const now = performance.now();
     const dt  = Math.max(1, now - lastT);
     const dx  = e.clientX - lastX;
+    moved += Math.abs(dx);          /* 累计位移：判断这次是「点击」还是「拖拽」 */
     /* 跟手感：拖多少像素，环就转过多少像素对应的角度
        （除以半径把像素换算成弧度，拖起来像真的在「拧」这个环） */
     const k = 180 / (Math.PI * Math.max(R, 120));
@@ -4409,6 +4418,8 @@ window.createRing = function(opts){
     cards.forEach((el, i) => {
       el.addEventListener('click', e => {
         if (e.target.closest('video')) return;
+        /* 刚拖过一圈（位移超过 6px）就不算点击 —— 否则转完松手会误开大图。 */
+        if (moved > 6){ moved = 0; return; }
         const fi = frontIndex();
         if (fi === i) ringshot(el, i);
         else spinTo(i, true);
@@ -4446,13 +4457,25 @@ window.createRing = function(opts){
     else if (e.key === 'ArrowRight'){ e.preventDefault(); spinTo(frontIndex() + 1, true); }
   });
 
-  /* ---------- 点击放大：正对你的卡片单独成焦点 ---------- */
+  /* ---------- 点击正面卡：打开大图 ---------- */
   function ringshot(el, i){
     el.animate(
       [{ transform: el.style.transform + ' translateZ(70px)' }, { transform: el.style.transform }],
       { duration: 620, easing: 'cubic-bezier(.22,1,.36,1)' }
     );
     dots.forEach((d, k) => d.classList.toggle('on', k === i));
+
+    /* 视频卡不开大图（点了就直接播）；
+       图片卡则把「这一个环里的所有照片」交给查看器，方便左右翻。
+       这样在相册环里点开一张，就能顺着看完整本，不用退出来转。 */
+    const it = ITEMS[i];
+    if (!it || it.kind === 'video') return;
+    if (!window.__lb) return;
+    const photos = ITEMS
+      .map((x, k) => (x.kind === 'video' ? null : { src: x.src, title: x.title, sub: x.sub, k }))
+      .filter(Boolean);
+    const at = photos.findIndex(p => p.k === i);
+    window.__lb.show(photos, at < 0 ? 0 : at);
   }
 
   /* ---------- 视口可见才跑 ---------- */
@@ -4629,4 +4652,114 @@ window.createRing = function(opts){
       done(fallback(WX));
     }
   });
+})();
+
+
+/* ==========================================================
+   图片放大查看器（Lightbox）
+   ----------------------------------------------------------
+   点环里正面的卡 → 打开这一张的原图（webp 优先，自动挑）。
+   一个环内的所有照片可以左右翻页，不跨环。
+
+   为什么不做「点任意卡都开大图」：
+   点侧面的卡应该是「转过去看它」，这是环的核心手感；
+   只有已经转到正面的卡，再点一下才是「我要看大图」。
+   ========================================================== */
+(function initLightbox(){
+  const box   = document.createElement('div');
+  box.className = 'lb';
+  box.setAttribute('role', 'dialog');
+  box.setAttribute('aria-modal', 'true');
+  box.setAttribute('aria-label', '图片放大查看');
+  box.innerHTML =
+    '<figure class="lb-fig">' +
+      '<img class="lb-img" alt="">' +
+      '<figcaption class="lb-cap"><b></b><i></i></figcaption>' +
+    '</figure>' +
+    '<button class="lb-x" type="button" aria-label="关闭">✕</button>' +
+    '<button class="lb-nav lb-prev" type="button" aria-label="上一张">‹</button>' +
+    '<button class="lb-nav lb-next" type="button" aria-label="下一张">›</button>' +
+    '<div class="lb-meta"></div>';
+  document.body.appendChild(box);
+
+  const imgEl  = box.querySelector('.lb-img');
+  const capB   = box.querySelector('.lb-cap b');
+  const capI   = box.querySelector('.lb-cap i');
+  const metaEl = box.querySelector('.lb-meta');
+  const prevEl = box.querySelector('.lb-prev');
+  const nextEl = box.querySelector('.lb-next');
+  const closeEl= box.querySelector('.lb-x');
+
+  /* 当前查看的相册（一个环的图片项列表）与下标 */
+  let list = [];
+  let idx  = 0;
+  let open = false;
+
+  function render(){
+    const it = list[idx];
+    if (!it) return;
+    /* 用 __setImg 自动挑 webp / jpg，并带失败兜底 */
+    imgEl.alt = it.title || '';
+    imgEl.removeAttribute('src');
+    window.__setImg(imgEl, it.src);
+    capB.textContent = it.title || '';
+    capI.textContent = it.sub || '';
+    metaEl.textContent = list.length > 1
+      ? (idx + 1) + ' / ' + list.length + '   ·    ← → 翻页 · Esc 关闭'
+      : 'Esc 关闭';
+    const many = list.length > 1;
+    prevEl.hidden = !many;
+    nextEl.hidden = !many;
+  }
+
+  function show(photos, i){
+    list = photos;
+    idx  = Math.max(0, Math.min(photos.length - 1, i));
+    render();
+    if (!open){
+      open = true;
+      box.classList.add('open');
+      document.documentElement.classList.add('lb-mode');
+    }
+  }
+  function close(){
+    if (!open) return;
+    open = false;
+    box.classList.remove('open');
+    document.documentElement.classList.remove('lb-mode');
+    setTimeout(() => { if (!open) imgEl.removeAttribute('src'); }, 340);
+  }
+  function step(d){
+    if (list.length < 2) return;
+    idx = (idx + d + list.length) % list.length;
+    render();
+  }
+
+  closeEl.addEventListener('click', close);
+  prevEl.addEventListener('click', e => { e.stopPropagation(); step(-1); });
+  nextEl.addEventListener('click', e => { e.stopPropagation(); step(1); });
+  /* 点空白处关闭，点图片本身不关（方便长按保存） */
+  box.addEventListener('click', e => {
+    if (e.target === box || e.target.closest('.lb-fig') === null) close();
+  });
+
+  document.addEventListener('keydown', e => {
+    if (!open) return;
+    if (e.key === 'Escape'){ e.preventDefault(); close(); }
+    else if (e.key === 'ArrowLeft'){ e.preventDefault(); step(-1); }
+    else if (e.key === 'ArrowRight'){ e.preventDefault(); step(1); }
+  }, true);
+
+  /* 触摸板 / 手指左右滑 */
+  let sx = null;
+  box.addEventListener('touchstart', e => { sx = e.touches[0].clientX; }, { passive: true });
+  box.addEventListener('touchend', e => {
+    if (sx === null) return;
+    const dx = e.changedTouches[0].clientX - sx;
+    if (Math.abs(dx) > 46) step(dx < 0 ? 1 : -1);
+    sx = null;
+  }, { passive: true });
+
+  /* 暴露给环使用 */
+  window.__lb = { show, close, isOpen(){ return open; } };
 })();
