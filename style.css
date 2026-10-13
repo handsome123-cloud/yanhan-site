@@ -143,13 +143,15 @@ body{
    ========================================================== */
 .bg-texture{
   position:fixed;inset:0;z-index:0;pointer-events:none;
-  /* 2.1MB 的 PNG 压成 15KB WebP（JPG 42KB 兜底），视觉上肉眼无差别。
-     这张图本身是大面积模糊光晕，1024 宽完全够用。 */
-  background:url("assets/aura-texture-1024.jpg?v=5") center/cover no-repeat;
+  /* 2.1MB 的 PNG → 15KB WebP（PNG 兜底），视觉上肉眼无差别。
+     ⚠️ 文件名是 800 而不是 1024：这张图本身是大面积模糊光晕，
+        800 宽铺满任何屏幕都不会看出差别，体积却只有 15KB。
+        引用必须与实际推上线的文件名一致，否则整层纹理静默 404。 */
+  background:url("assets/aura-texture.png?v=6") center/cover no-repeat;
   opacity:var(--texture-op);
 }
 @supports (background-image: url("x.webp")){
-  .bg-texture{background-image:url("assets/aura-texture-1024.webp?v=5")}
+  .bg-texture{background-image:url("assets/aura-texture-800.webp?v=6")}
 }
 .aura{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden}
 .aura span{
