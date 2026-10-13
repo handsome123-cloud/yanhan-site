@@ -4673,8 +4673,20 @@ window.createRing = function(opts){
   box.setAttribute('aria-label', '图片放大查看');
   box.innerHTML =
     '<figure class="lb-fig">' +
-      '<img class="lb-img" alt="">' +
-      '<figcaption class="lb-cap"><b></b><i></i></figcaption>' +
+      '<div class="lb-frame">' +
+        '<img class="lb-img" alt="">' +
+      '</div>' +
+      '<figcaption class="lb-cap">' +
+        '<b></b>' +
+        '<i></i>' +
+        '<button class="lb-copy" type="button" aria-label="复制这句话">' +
+          '<svg viewBox="0 0 24 24" aria-hidden="true">' +
+            '<rect x="9" y="9" width="11" height="11" rx="2.4" fill="none" stroke="currentColor" stroke-width="1.7"/>' +
+            '<path d="M6.5 15H5.4A1.9 1.9 0 0 1 3.5 13.1V5.4A1.9 1.9 0 0 1 5.4 3.5h7.7a1.9 1.9 0 0 1 1.9 1.9v1.1" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>' +
+          '</svg>' +
+          '<span class="lb-copy-txt">复制</span>' +
+        '</button>' +
+      '</figcaption>' +
     '</figure>' +
     '<button class="lb-x" type="button" aria-label="关闭">✕</button>' +
     '<button class="lb-nav lb-prev" type="button" aria-label="上一张">‹</button>' +
@@ -4683,8 +4695,11 @@ window.createRing = function(opts){
   document.body.appendChild(box);
 
   const imgEl  = box.querySelector('.lb-img');
+  const frameEl= box.querySelector('.lb-frame');
   const capB   = box.querySelector('.lb-cap b');
   const capI   = box.querySelector('.lb-cap i');
+  const copyEl = box.querySelector('.lb-copy');
+  const copyTxt= box.querySelector('.lb-copy-txt');
   const metaEl = box.querySelector('.lb-meta');
   const prevEl = box.querySelector('.lb-prev');
   const nextEl = box.querySelector('.lb-next');
@@ -4694,7 +4709,71 @@ window.createRing = function(opts){
   let list = [];
   let idx  = 0;
   let open = false;
+  let typeTimer = 0;          /* 标题逐字浮现的定时器，翻页/关闭时要清掉 */
 
+  /* ---------- 标题逐字浮现 ----------
+     像手写便签一样一个字一个字浮出来，而不是整行"啪"地出现。
+     翻页或关闭时必须清掉上一个定时器，否则两段文字会打架。 */
+  function typeIn(text){
+    clearInterval(typeTimer);
+    capB.textContent = '';
+    if (!text){ return; }
+    /* 尊重系统「减少动态效果」偏好：直接整句显示，不做打字机 */
+    if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches){
+      capB.textContent = text;
+      return;
+    }
+    let i = 0;
+    capB.classList.add('typing');
+    typeTimer = setInterval(() => {
+      i++;
+      capB.textContent = text.slice(0, i);
+      if (i >= text.length){
+        clearInterval(typeTimer);
+        capB.classList.remove('typing');
+      }
+    }, 52);
+  }
+
+  /* ---------- 一键复制这句话 ----------
+     优先用剪贴板 API；file:// 或旧浏览器下会失败，退回 textarea + execCommand。
+     复制成功后按钮短暂变成「已复制」。 */
+  function copyText(text){
+    if (!text) return Promise.resolve(false);
+    const done = () => flashCopied();
+
+    if (navigator.clipboard && navigator.clipboard.writeText){
+      return navigator.clipboard.writeText(text).then(() => { done(); return true; },
+                                                     () => { fallback(); return false; });
+    }
+    fallback();
+    return Promise.resolve(true);
+
+    function fallback(){
+      try {
+        const ta = document.createElement('textarea');
+        ta.value = text;
+        ta.setAttribute('readonly', '');
+        ta.style.cssText = 'position:fixed;top:-9999px;opacity:0';
+        document.body.appendChild(ta);
+        ta.select();
+        ta.setSelectionRange(0, text.length);
+        document.execCommand('copy');
+        document.body.removeChild(ta);
+        done();
+      } catch(e){ /* 实在复制不了就静默失败，不打扰用户 */ }
+    }
+  }
+  function flashCopied(){
+    copyEl.classList.add('done');
+    copyTxt.textContent = '已复制';
+    setTimeout(() => {
+      copyEl.classList.remove('done');
+      copyTxt.textContent = '复制';
+    }, 1600);
+  }
+
+  /* ---------- 一帧渲染 ---------- */
   function render(){
     const it = list[idx];
     if (!it) return;
@@ -4702,10 +4781,15 @@ window.createRing = function(opts){
     imgEl.alt = it.title || '';
     imgEl.removeAttribute('src');
     window.__setImg(imgEl, it.src);
-    capB.textContent = it.title || '';
+    /* 相纸风：每张照片给一个固定的小倾角，靠下标算出来（同一张每次都一样，
+       不会翻回来角度就变了）。0/1/-1 交替，看起来像随手摊在桌上。 */
+    frameEl.style.setProperty('--tilt', (((idx % 3) - 1) * 0.7).toFixed(2) + 'deg');
+    typeIn(it.title || '');
     capI.textContent = it.sub || '';
+    copyEl.hidden = !(it.title || it.sub);
+    copyEl.dataset.text = [it.title, it.sub].filter(Boolean).join(' · ');
     metaEl.textContent = list.length > 1
-      ? (idx + 1) + ' / ' + list.length + '   ·    ← → 翻页 · Esc 关闭'
+      ? (idx + 1) + ' / ' + list.length + '   ·   ← → 翻页 · Esc 关闭'
       : 'Esc 关闭';
     const many = list.length > 1;
     prevEl.hidden = !many;
@@ -4725,6 +4809,7 @@ window.createRing = function(opts){
   function close(){
     if (!open) return;
     open = false;
+    clearInterval(typeTimer);
     box.classList.remove('open');
     document.documentElement.classList.remove('lb-mode');
     setTimeout(() => { if (!open) imgEl.removeAttribute('src'); }, 340);
@@ -4735,6 +4820,10 @@ window.createRing = function(opts){
     render();
   }
 
+  copyEl.addEventListener('click', e => {
+    e.stopPropagation();
+    copyText(copyEl.dataset.text);
+  });
   closeEl.addEventListener('click', close);
   prevEl.addEventListener('click', e => { e.stopPropagation(); step(-1); });
   nextEl.addEventListener('click', e => { e.stopPropagation(); step(1); });
