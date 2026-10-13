@@ -2998,20 +2998,72 @@ html.lb-mode{overflow:hidden}
 }
 .lb.open .lb-fig{transform:scale(1);opacity:1}
 
-.lb-img{
-  max-width:min(92vw,1100px);
-  max-height:min(74vh,760px);
-  width:auto;height:auto;display:block;
-  border-radius:18px;
-  box-shadow:0 40px 90px -30px rgba(10,6,24,.7);
-  background:linear-gradient(135deg,rgba(255,255,255,.14),rgba(255,255,255,.06));
+/* ---------- 相纸风相框 ----------
+   照片不再是"贴"在深色背景上，而是像一张相纸随手摊在桌上：
+   白边、轻微阴影、固定的小倾角。倾角由 JS 通过 --tilt 按下标给。 */
+.lb-frame{
+  position:relative;
+  padding:clamp(8px,1.4vw,14px) clamp(8px,1.4vw,14px) clamp(30px,4vw,46px);
+  border-radius:6px;
+  background:linear-gradient(160deg,#fffefb,#f4f1ec 62%,#eeeae3);
+  box-shadow:
+    0 2px 0 rgba(255,255,255,.9) inset,
+    0 42px 90px -34px rgba(10,6,24,.72),
+    0 8px 24px -14px rgba(10,6,24,.5);
+  transform:rotate(var(--tilt,0deg));
+  transition:transform .38s cubic-bezier(.22,1,.36,1);
 }
+/* 相纸底部那一道光，模拟纸张反光 */
+.lb-frame::after{
+  content:'';position:absolute;inset:0;border-radius:inherit;pointer-events:none;
+  background:linear-gradient(115deg,rgba(255,255,255,.42) 0%,rgba(255,255,255,0) 34%);
+  mix-blend-mode:screen;
+}
+
+.lb-img{
+  max-width:min(88vw,1040px);
+  max-height:min(66vh,680px);
+  width:auto;height:auto;display:block;
+  border-radius:2px;
+  background:linear-gradient(135deg,rgba(190,196,220,.18),rgba(230,200,210,.18));
+}
+
 .lb-cap{
   color:rgba(255,255,255,.94);text-align:center;line-height:1.6;
   text-shadow:0 2px 12px rgba(0,0,0,.5);
+  display:flex;flex-direction:column;align-items:center;gap:3px;
 }
-.lb-cap b{display:block;font-size:clamp(.95rem,2.4vw,1.12rem);font-weight:500}
+.lb-cap b{
+  display:block;font-size:clamp(.95rem,2.4vw,1.12rem);font-weight:500;
+  min-height:1.6em;
+}
+/* 逐字浮现时，末尾跟一根跳动的小光标，像正在手写 */
+.lb-cap b.typing::after{
+  content:'▌';margin-left:2px;font-weight:400;opacity:.75;
+  animation:lbCaret .72s steps(1) infinite;
+}
+@keyframes lbCaret{0%,50%{opacity:.75}51%,100%{opacity:0}}
 .lb-cap i{font-style:normal;font-size:.78rem;opacity:.72}
+
+/* ---------- 一键复制这句话 ---------- */
+.lb-copy{
+  margin-top:8px;display:inline-flex;align-items:center;gap:6px;
+  padding:6px 14px;border-radius:100px;cursor:pointer;
+  font-size:.74rem;letter-spacing:.06em;color:rgba(255,255,255,.88);
+  border:1px solid rgba(255,255,255,.24);
+  background:rgba(255,255,255,.1);
+  -webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);
+  transition:background .25s,border-color .25s,color .25s,transform .25s;
+}
+.lb-copy svg{width:13px;height:13px;flex:none}
+.lb-copy:hover{background:rgba(255,255,255,.24);border-color:rgba(255,255,255,.4);transform:translateY(-1px)}
+.lb-copy:active{transform:translateY(0) scale(.97)}
+/* 复制成功的短暂反馈 */
+.lb-copy.done{
+  background:linear-gradient(135deg,var(--halo-peach),var(--halo-rose));
+  border-color:transparent;color:#fff;
+}
+.lb-copy[hidden]{display:none}
 
 /* 关闭键 */
 .lb-x{
@@ -3053,7 +3105,16 @@ html.lb-mode{overflow:hidden}
 .ring-card.ph{cursor:grab}
 
 @media(max-width:560px){
-  .lb-img{max-height:66vh;border-radius:14px}
+  /* 手机上相纸的白边收窄，但底部仍留一条，才有拍立得的味道 */
+  .lb-frame{padding:7px 7px 24px}
+  .lb-img{max-height:58vh}
+  .lb-cap b{font-size:.94rem}
   .lb-nav{width:42px;height:42px;font-size:1.3rem}
   .lb-x{width:38px;height:38px}
+  .lb-copy{padding:5px 12px;font-size:.7rem}
+}
+/* 系统开了「减少动态效果」就别做相纸倾角与打字机 */
+@media(prefers-reduced-motion:reduce){
+  .lb-frame{transform:none;transition:none}
+  .lb-cap b.typing::after{display:none}
 }
