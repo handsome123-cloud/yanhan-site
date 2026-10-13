@@ -3259,3 +3259,131 @@ html.lb-mode{overflow:hidden}
 
 /* 分享浮层打开时锁页面滚动 */
 html.share-mode{overflow:hidden}
+
+/* ==========================================================
+   站长入口（手机端进站长模式）
+   ----------------------------------------------------------
+   手机上没地方敲 ?owner=1，所以给一个看得见的小把手：
+   点开 → 输密码 → 记到本机。密码只比对哈希，不明文存放。
+   ========================================================== */
+
+/* 小把手：默认半透明，不抢眼，但摸得到。
+   位置要避开两个"占地户"：
+   · 右下角是翻页控件（z-index:97）
+   · 左下角是实时时钟
+   所以放在左侧、时钟正上方。 */
+.owner-key{
+  position:fixed;left:clamp(14px,2.4vw,30px);bottom:clamp(74px,11vh,96px);
+  z-index:98;
+  width:34px;height:34px;border-radius:50%;cursor:pointer;
+  font-size:.86rem;line-height:1;
+  color:rgba(255,255,255,.55);
+  border:1px solid rgba(255,255,255,.18);
+  background:rgba(255,255,255,.07);
+  -webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);
+  opacity:0;pointer-events:none;
+  transition:opacity .4s,transform .4s cubic-bezier(.22,1,.36,1),background .3s,color .3s;
+}
+/* 只在星空屏露出来 */
+html.on-star .owner-key{opacity:.55;pointer-events:auto}
+html.on-star .owner-key:hover{opacity:1;background:rgba(255,255,255,.18);color:#fff;transform:scale(1.1)}
+/* 已经是站长了 → 常亮一点，提示"你正在管理态" */
+html.is-owner .owner-key{color:var(--halo-butter);border-color:rgba(247,232,168,.4)}
+
+/* ---------- 浮层 ---------- */
+.owner-modal{
+  position:fixed;inset:0;z-index:9300;
+  display:flex;align-items:center;justify-content:center;
+  padding:20px;
+  background:rgba(8,5,18,.7);
+  -webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);
+  opacity:0;visibility:hidden;
+  transition:opacity .36s ease,visibility .36s ease;
+}
+.owner-modal.show{opacity:1;visibility:visible}
+
+.owner-box{
+  width:100%;max-width:360px;
+  padding:clamp(26px,4vw,34px) clamp(22px,4vw,30px);
+  border-radius:24px;text-align:center;
+  border:1px solid rgba(255,255,255,.18);
+  background:rgba(24,19,44,.96);
+  box-shadow:0 40px 90px -30px rgba(0,0,0,.85);
+  color:#edecf3;
+  transform:scale(.93) translateY(10px);
+  transition:transform .46s cubic-bezier(.22,1,.36,1);
+}
+.owner-modal.show .owner-box{transform:none}
+
+.owner-kicker{
+  font-size:.64rem;letter-spacing:.34em;color:var(--halo-butter);
+  margin-bottom:9px;
+}
+.owner-box h3{
+  font-family:var(--serif);font-size:1.14rem;font-weight:700;
+  letter-spacing:.06em;margin-bottom:8px;
+}
+.owner-sub{
+  font-size:.74rem;letter-spacing:.05em;color:#8b87a0;margin-bottom:20px;
+}
+
+.owner-input{
+  width:100%;padding:13px 16px;border-radius:13px;
+  font-family:inherit;font-size:1.05rem;letter-spacing:.34em;text-align:center;
+  color:#edecf3;
+  border:1px solid rgba(255,255,255,.2);
+  background:rgba(255,255,255,.06);
+  transition:border-color .3s,box-shadow .3s;
+}
+.owner-input::placeholder{color:#5d5977;letter-spacing:.3em}
+.owner-input:focus{
+  outline:none;border-color:var(--halo-lilac);
+  box-shadow:0 0 0 3px rgba(201,167,235,.22);
+}
+/* 输错时抖一下，比一行红字更好懂 */
+.owner-input.bad{animation:ownerShake .42s cubic-bezier(.36,.07,.19,.97)}
+@keyframes ownerShake{
+  10%,90%{transform:translateX(-2px)}
+  20%,80%{transform:translateX(4px)}
+  30%,50%,70%{transform:translateX(-6px)}
+  40%,60%{transform:translateX(6px)}
+}
+
+.owner-err{
+  min-height:1.2em;margin-top:10px;
+  font-size:.72rem;letter-spacing:.05em;color:#f7a8c4;
+}
+
+.owner-actions{
+  margin-top:16px;display:flex;gap:10px;
+}
+.owner-ok,.owner-cancel,.owner-out{
+  padding:11px 20px;border-radius:100px;cursor:pointer;
+  font-family:inherit;font-size:.8rem;letter-spacing:.1em;
+  transition:transform .3s cubic-bezier(.22,1,.36,1),background .3s,filter .3s;
+}
+.owner-ok{
+  flex:1;border:0;color:#2a2140;font-weight:500;
+  background:linear-gradient(135deg,var(--halo-butter),var(--halo-peach));
+  box-shadow:0 12px 28px -16px rgba(230,190,140,.85);
+}
+.owner-ok:hover{transform:translateY(-2px);filter:brightness(1.05)}
+.owner-ok:active{transform:translateY(0) scale(.98)}
+.owner-cancel{
+  flex:none;border:1px solid rgba(255,255,255,.2);
+  background:rgba(255,255,255,.08);color:#c9c5da;
+}
+.owner-cancel:hover{background:rgba(255,255,255,.16);transform:translateY(-2px)}
+
+/* 已是站长时显示的"退出"，低调地放在最下面 */
+.owner-out{
+  margin-top:14px;width:100%;border:0;background:transparent;
+  color:#7c7890;font-size:.72rem;padding:6px;
+}
+.owner-out:hover{color:#f7a8c4}
+.owner-out[hidden]{display:none}
+
+@media(max-width:560px){
+  .owner-box{padding:24px 18px 20px;border-radius:20px}
+  .owner-key{width:30px;height:30px;font-size:.78rem;bottom:clamp(66px,10vh,86px)}
+}
