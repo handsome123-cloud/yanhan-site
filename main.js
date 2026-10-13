@@ -4519,18 +4519,24 @@ window.createRing = function(opts){
     kind:'video', icon:'▶', title, sub:'点击播放', src:'assets/' + file
   });
 
-  /* ---------- ① 影像记忆主屏 ---------- */
+  /* ---------- ① 影像记忆主屏 ----------
+     2026 换新：12 件新记忆（11 张图 + 1 段视频），替代原有内容。
+     顺序就是上传时的顺序。 */
   window.__ring = window.createRing({
     root: 'ring',
     items: [
-      PHOTO(1, 'ring1.jpg'),
-      PHOTO(2, 'ring2.jpg'),
-      VIDEO('video1.mp4', '美姿令人着迷的邵某人'),
-      VIDEO('video3.mp4', '第三段回忆'),
-      PHOTO(3, 'ring3.jpg'),
-      VIDEO('video2.mp4', '第二段回忆'),
-      VIDEO('video4.mp4', '第四段回忆'),
-      PHOTO(4, 'ring4.jpg')
+      { kind:'photo', ph:false, icon:'▣', title:'天台上的风，和整片港口',   sub:'2025 · 高处看得远',      src:'assets/yh-1.jpg' },
+      { kind:'photo', ph:false, icon:'▣', title:'画了一整个世界的熊',       sub:'2022 · 手绘',            src:'assets/yh-2.jpg' },
+      { kind:'photo', ph:false, icon:'▣', title:'雪地里的小孩，长这么大了', sub:'小时候 · 对比',          src:'assets/yh-3.jpg' },
+      { kind:'photo', ph:false, icon:'▣', title:'橡皮泥捏出的细胞帝国',     sub:'生物课作业',             src:'assets/yh-4.jpg' },
+      { kind:'photo', ph:false, icon:'▣', title:'来泰山，与文人共游',       sub:'研学 · 手绘海报',        src:'assets/yh-5.jpg' },
+      { kind:'photo', ph:false, icon:'▣', title:'大哥罩你 · 大哥的留言',   sub:'毕业 · 旧时光',          src:'assets/yh-6.jpg' },
+      { kind:'photo', ph:false, icon:'▣', title:'会开花的特效整活',         sub:'16:18 · 今天',           src:'assets/yh-7.jpg' },
+      { kind:'photo', ph:false, icon:'▣', title:'亲笔签名，先收藏后增值',   sub:'- LOVE -',               src:'assets/yh-8.jpg' },
+      { kind:'photo', ph:false, icon:'▣', title:'祝这个世界继续热闹',       sub:'生日快乐',                src:'assets/yh-9.jpg' },
+      { kind:'photo', ph:false, icon:'▣', title:'幼儿园第一天，都记在本子里', sub:'2014 · 手写日记',      src:'assets/yh-10.jpg' },
+      { kind:'photo', ph:false, icon:'▣', title:'扭扭棒 U·H 和一只兔子',   sub:'手工 · 书签',            src:'assets/yh-11.jpg' },
+      VIDEO('video8.mp4', '新的一段回忆')
     ]
   });
 
