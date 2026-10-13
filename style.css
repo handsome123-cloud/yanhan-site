@@ -2692,7 +2692,9 @@ body > .branch-back-fab.bb-parked{display:flex}
    左下角：背景音乐
    ========================================================== */
 .music{
-  position:fixed;left:clamp(14px,2.4vw,34px);top:clamp(14px,2.4vh,28px);
+  /* 不能和左上角的导航 logo（颜涵）挤同一行 —— 面板展开时会把它盖住。
+     下移到 logo 正下方，整块错开导航栏。 */
+  position:fixed;left:clamp(14px,2.4vw,34px);top:clamp(64px,9vh,84px);
   z-index:96;display:flex;align-items:center;gap:10px;
 }
 .music-btn{
