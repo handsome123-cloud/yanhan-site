@@ -4656,6 +4656,93 @@ window.createRing = function(opts){
 
 
 /* ==========================================================
+   分享给朋友（二维码面板）
+   ----------------------------------------------------------
+   末屏「把这个站分享给朋友」按钮 → 弹出一个浮层：
+     · 内联 SVG 二维码（路径是构建时用 Python 的 qrcode 算好写进 HTML 的，
+       不用任何在线接口，本地双击打开也能扫）
+     · 一条可复制的网址
+   ========================================================== */
+(function sharePanel(){
+  const btn   = document.getElementById('shareBtn');
+  const mask  = document.getElementById('shareMask');
+  const closeEl = document.getElementById('shareClose');
+  const copyEl  = document.getElementById('shareCopy');
+  const linkEl  = document.getElementById('shareLink');
+  if (!btn || !mask) return;
+
+  let open = false;
+
+  function openPanel(){
+    if (open) return;
+    open = true;
+    mask.classList.add('open');
+    mask.removeAttribute('aria-hidden');
+    btn.setAttribute('aria-expanded', 'true');
+    document.documentElement.classList.add('share-mode');
+    closeEl.focus({ preventScroll: true });
+  }
+  function closePanel(){
+    if (!open) return;
+    open = false;
+    mask.classList.remove('open');
+    mask.setAttribute('aria-hidden', 'true');
+    btn.setAttribute('aria-expanded', 'false');
+    document.documentElement.classList.remove('share-mode');
+    btn.focus({ preventScroll: true });
+  }
+
+  /* 复制链接：优先剪贴板 API，file:// 下退回 execCommand */
+  function copyLink(){
+    const text = (linkEl && linkEl.value) || location.href;
+    const done = () => {
+      copyEl.textContent = '已复制';
+      copyEl.classList.add('done');
+      setTimeout(() => {
+        copyEl.textContent = '复制';
+        copyEl.classList.remove('done');
+      }, 1700);
+    };
+    const fallback = () => {
+      try {
+        if (linkEl){ linkEl.removeAttribute('readonly'); }
+        linkEl.select();
+        linkEl.setSelectionRange(0, text.length);
+        document.execCommand('copy');
+        if (linkEl){ linkEl.setAttribute('readonly', ''); }
+        done();
+      } catch(e){ /* 复制不了就静默，用户还能手动选中 */ }
+    };
+    if (navigator.clipboard && navigator.clipboard.writeText){
+      navigator.clipboard.writeText(text).then(done, fallback);
+    } else {
+      fallback();
+    }
+  }
+
+  btn.addEventListener('click', openPanel);
+  closeEl.addEventListener('click', closePanel);
+  copyEl.addEventListener('click', copyLink);
+
+  /* 点二维码外面的空白关掉；点面板内部不关 */
+  mask.addEventListener('click', e => {
+    if (e.target === mask) closePanel();
+  });
+
+  document.addEventListener('keydown', e => {
+    if (!open) return;
+    if (e.key === 'Escape'){ e.preventDefault(); closePanel(); }
+  }, true);
+
+  /* 链接输入框：手机上一按就全选，方便手动复制 */
+  if (linkEl){
+    linkEl.addEventListener('focus', () => linkEl.select());
+    linkEl.addEventListener('click', () => linkEl.select());
+  }
+})();
+
+
+/* ==========================================================
    图片放大查看器（Lightbox）
    ----------------------------------------------------------
    点环里正面的卡 → 打开这一张的原图（webp 优先，自动挑）。
