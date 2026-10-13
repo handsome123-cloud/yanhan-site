@@ -729,7 +729,21 @@
       <div class="star-sky reveal" id="starSky" aria-label="留言星空"></div>
       <p class="star-hint" id="starHint">— 还没有星星，等你点亮第一颗 —</p>
 
-      <!-- 留言弹幕：留言内容从星空上飘过（只读展示，不影响星星本体） -->
+      <!-- 弹幕开关：默认关闭。
+           弹幕会从星空上飘过，有人喜欢热闹、有人觉得挡视线，
+           所以做成显式开关，把选择权交给看的人。 -->
+      <div class="dm-toggle-row reveal">
+        <button class="dm-toggle" id="dmToggle" type="button"
+                role="switch" aria-checked="false" aria-controls="dmLayer">
+          <span class="dmt-track" aria-hidden="true"><i class="dmt-knob"></i></span>
+          <span class="dmt-label">弹幕</span>
+          <span class="dmt-state" id="dmState">关</span>
+        </button>
+        <span class="dmt-hint" id="dmHint">打开后，留言会从星空上飘过</span>
+      </div>
+
+      <!-- 留言弹幕：留言内容从星空上飘过（只读展示，不影响星星本体）
+           默认 aria-hidden，开关打开后才真正开始飘 -->
       <div class="dm-layer" id="dmLayer" aria-hidden="true"></div>
 
       <!-- 留言输入：所有人都能写（访客也能点一颗星） -->
