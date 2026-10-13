@@ -58,6 +58,16 @@
 <!-- L3 颗粒 -->
 <div class="grain" aria-hidden="true"></div>
 
+<!-- ====== 开场遮罩：每次新会话的第一眼 ======
+     弥散光从暗里浮起 → 站名浮现 → 整幕揭开。
+     同一个浏览器标签页只播一次（sessionStorage 记着），
+     系统开了「减少动态效果」时直接跳过。 -->
+<div class="intro-veil" id="introVeil" aria-hidden="true">
+  <div class="iv-aura"></div>
+  <p class="iv-name">颜<em>涵</em></p>
+  <p class="iv-sub">回 忆 与 此 刻</p>
+</div>
+
 <!-- 雪花彩蛋 -->
 <div class="snow-layer" id="snowLayer" aria-hidden="true"></div>
 
@@ -228,6 +238,15 @@
 
         <div class="glass timeline reveal tilt">
           <h3>人生切片</h3>
+
+          <!-- 年份滑块：拖动 / 点节点，右侧面板跟着换 -->
+          <div class="tl-slider">
+            <input class="tl-range" id="tlRange" type="range"
+                   min="0" max="3" step="1" value="3"
+                   aria-label="拖动查看不同阶段">
+            <div class="tl-ticks" id="tlTicks"></div>
+          </div>
+
           <div class="tl-rail" id="tlRail">
             <div class="tl-progress" id="tlProgress"></div>
           </div>
@@ -246,6 +265,14 @@
           <div class="tl-item" data-i="3">
             <p class="tl-year">2027 — 现在</p>
             <p class="tl-desc">大学生哈哈哈，是真正对勇气的考验。</p>
+          </div>
+
+          <!-- 年度关键词 + 这一阶段的"数据条" -->
+          <div class="tl-detail" id="tlDetail" aria-live="polite">
+            <p class="tld-kicker">这 一 段 的 关 键 词</p>
+            <div class="tld-tags" id="tldTags"></div>
+            <p class="tld-note" id="tldNote"></p>
+            <div class="tld-stats" id="tldStats"></div>
           </div>
         </div>
       </div>
@@ -394,6 +421,21 @@
       </div>
 
       <p class="ring-hint reveal">← 按住拖动转一圈 · 点正面的照片可放大看 · 视频卡直接播</p>
+
+      <!-- 随机回忆抽签：命运替你挑一张
+           ⚠️ 必须放在 branch-hub 之前：s4 内容高于一屏，
+              放在最后的抽屉下方会被挤出视野，得滚动才看得见。 -->
+      <div class="draw-row reveal">
+        <button class="draw-btn magnetic" id="drawBtn" type="button">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <rect x="3.2" y="5.5" width="17.6" height="13" rx="2.6" fill="none" stroke="currentColor" stroke-width="1.7"/>
+            <circle cx="9" cy="11" r="1.7" fill="currentColor"/>
+            <path d="M6 16.2l3.4-3.2 2.4 2.2 3-2.8 3.2 3.8" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          <span>抽一段回忆</span>
+          <em class="draw-sub">命运替你挑一张</em>
+        </button>
+      </div>
 
       <!-- 分支入口：跳转到各自独立的相册屏 -->
       <div class="branch-hub reveal">
@@ -686,6 +728,9 @@
       <!-- 星空：星星由 JS 生成 -->
       <div class="star-sky reveal" id="starSky" aria-label="留言星空"></div>
       <p class="star-hint" id="starHint">— 还没有星星，等你点亮第一颗 —</p>
+
+      <!-- 留言弹幕：留言内容从星空上飘过（只读展示，不影响星星本体） -->
+      <div class="dm-layer" id="dmLayer" aria-hidden="true"></div>
 
       <!-- 留言输入：所有人都能写（访客也能点一颗星） -->
       <div class="gb-form" id="gbForm">
