@@ -322,6 +322,13 @@ function armSlideImgs(sl){
 function next(){ goTo(cur + 1); }
 function prev(){ goTo(cur - 1); }
 
+/* 调试/自动化接口：外面（含测试脚本）没法直接调 goTo，
+   只能点翻页键，而翻页有 1s 节流，连点会被吞。
+   暴露一个直达通道，不改变任何页面行为。 */
+window.__goTo = goTo;
+window.__slideIndex = () => cur;
+window.__slideById = id => slides.findIndex(s => s.id === id);
+
 /* ---------- 分支相册：跳出 / 收回 ---------- */
 
 /* ⚠️ 关键陷阱：.deck 上有 transform（翻页靠 translateY 实现）。
@@ -3158,7 +3165,7 @@ document.querySelectorAll('.flip').forEach(card => {  card.addEventListener('cli
 })();
 
 /* ==========================================================
-   13. 发光时间轴
+   13. 发光时间轴（含年份滑块 + 年度关键词 + 数据条）
    ========================================================== */
 (function timelineFx(){
   const s1 = document.getElementById('s1');
@@ -3169,6 +3176,114 @@ document.querySelectorAll('.flip').forEach(card => {  card.addEventListener('cli
   const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
   let timers = [];
 
+  /* ---------- 每一段的关键词、注解、数据 ----------
+     数据条里的数字是"这一段大概发生了多少事"的示意，
+     不是精确统计 —— 想让哪根条长一点/短一点，改这里的 num 就行。
+     标签名称也可以随便加，会自动排布。 */
+  const STAGES = [
+    {
+      tags: ['懵懂', '手脚并用', '记忆模糊'],
+      note: '最早的几年几乎没留下什么，只剩下一些温度和光的碎片。',
+      stats: [
+        { label:'留下来的照片', num: 2,  max: 12 },
+        { label:'记得清楚的事', num: 1,  max: 12 },
+        { label:'学会的新技能', num: 4,  max: 12 }
+      ]
+    },
+    {
+      tags: ['红领巾', '自我意识', '初次探索'],
+      note: '开始知道"我"是谁了，也开始知道世界上有些门是关着的。',
+      stats: [
+        { label:'留下来的照片', num: 4,  max: 12 },
+        { label:'记得清楚的事', num: 5,  max: 12 },
+        { label:'学会的新技能', num: 7,  max: 12 }
+      ]
+    },
+    {
+      tags: ['学业', '勇敢', '青春体验'],
+      note: '一边在题海里扑腾，一边偷偷把该体验的都体验了一遍。',
+      stats: [
+        { label:'留下来的照片', num: 9,  max: 12 },
+        { label:'记得清楚的事', num: 11, max: 12 },
+        { label:'学会的新技能', num: 10, max: 12 }
+      ]
+    },
+    {
+      tags: ['大学', '勇气考验', '正在发生'],
+      note: '这一段的照片还在拍，故事还没写完 —— 所以数据条也是活的。',
+      stats: [
+        { label:'留下来的照片', num: 7,  max: 12 },
+        { label:'记得清楚的事', num: 6,  max: 12 },
+        { label:'学会的新技能', num: 8,  max: 12 }
+      ]
+    }
+  ];
+
+  const rangeEl  = document.getElementById('tlRange');
+  const ticksEl  = document.getElementById('tlTicks');
+  const tagsEl   = document.getElementById('tldTags');
+  const noteEl   = document.getElementById('tldNote');
+  const statsEl  = document.getElementById('tldStats');
+
+  /* 刻度：按年份区间生成，点了就跳到那一段 */
+  if (ticksEl && !ticksEl.children.length){
+    items.forEach((el, i) => {
+      const yearEl = el.querySelector('.tl-year');
+      const sp = document.createElement('span');
+      sp.textContent = (yearEl ? yearEl.textContent : '').split('—')[0].trim();
+      sp.dataset.i = i;
+      sp.addEventListener('click', () => select(i));
+      ticksEl.appendChild(sp);
+    });
+  }
+  if (rangeEl) rangeEl.max = String(items.length - 1);
+
+  /* 当前选中的那一段：高亮节点 + 换详情卡 + 同步滑块 */
+  function select(i){
+    i = Math.max(0, Math.min(items.length - 1, i));
+    items.forEach((x, k) => x.classList.toggle('lit', k <= i));
+    if (progress) progress.style.height = (((i + 1) / items.length) * 100) + '%';
+    if (rangeEl) rangeEl.value = String(i);
+    if (ticksEl) Array.from(ticksEl.children).forEach((sp, k) => sp.classList.toggle('on', k === i));
+    paintDetail(i);
+  }
+
+  function paintDetail(i){
+    const st = STAGES[i] || STAGES[0];
+    if (!tagsEl) return;
+
+    /* 标签：逐个淡入，间隔 70ms 错开 */
+    tagsEl.innerHTML = '';
+    st.tags.forEach((t, k) => {
+      const sp = document.createElement('span');
+      sp.textContent = t;
+      sp.style.animationDelay = (reduce ? 0 : k * 70) + 'ms';
+      tagsEl.appendChild(sp);
+    });
+
+    if (noteEl) noteEl.textContent = st.note;
+
+    /* 数据条：先渲染成 0 宽，下一帧再撑开，才有生长动画 */
+    if (statsEl){
+      statsEl.innerHTML = '';
+      st.stats.forEach(s => {
+        const row = document.createElement('div');
+        row.className = 'tld-row';
+        const pct = Math.round((s.num / s.max) * 100);
+        row.innerHTML =
+          '<span class="tld-label"></span>' +
+          '<span class="tld-bar"><i></i></span>' +
+          '<span class="tld-val"></span>';
+        row.querySelector('.tld-label').textContent = s.label;
+        row.querySelector('.tld-val').textContent = s.num + '/' + s.max;
+        statsEl.appendChild(row);
+        const bar = row.querySelector('.tld-bar i');
+        if (reduce){ bar.style.width = pct + '%'; }
+        else { requestAnimationFrame(() => requestAnimationFrame(() => { bar.style.width = pct + '%'; })); }
+      });
+    }
+  }
+
   function run(){
     timers.forEach(t => clearTimeout(t)); timers = [];
     items.forEach(el => el.classList.remove('lit'));
@@ -3177,6 +3292,9 @@ document.querySelectorAll('.flip').forEach(card => {  card.addEventListener('cli
     if (reduce) {
       items.forEach(el => el.classList.add('lit'));
       progress.style.height = '100%';
+      paintDetail(items.length - 1);
+      if (rangeEl) rangeEl.value = String(items.length - 1);
+      if (ticksEl) Array.from(ticksEl.children).forEach((sp,k) => sp.classList.toggle('on', k === items.length - 1));
       return;
     }
     // 进度线 1.6s 走完
@@ -3186,15 +3304,18 @@ document.querySelectorAll('.flip').forEach(card => {  card.addEventListener('cli
     items.forEach((el, i) => {
       timers.push(setTimeout(() => el.classList.add('lit'), 260 + i * 330));
     });
+    /* 点亮走完后再展示最后一段的详情，避免和动画抢注意力 */
+    timers.push(setTimeout(() => select(items.length - 1), 260 + (items.length - 1) * 330 + 220));
   }
 
-  // 点击某段可高亮它
+  // 点击某段可高亮它（并换详情）
   items.forEach(el => {
-    el.addEventListener('click', () => {
-      const idx = +el.dataset.i;
-      items.forEach((x, i) => x.classList.toggle('lit', i <= idx));
-    });
+    el.addEventListener('click', () => select(+el.dataset.i));
   });
+
+  if (rangeEl){
+    rangeEl.addEventListener('input', () => select(+rangeEl.value));
+  }
 
   let played = false;
   const obs = new MutationObserver(() => {
@@ -3203,6 +3324,9 @@ document.querySelectorAll('.flip').forEach(card => {  card.addEventListener('cli
     if (!active) played = false;
   });
   obs.observe(s1, { attributes:true, attributeFilter:['class'] });
+
+  /* 首屏就是 s1 时不经过 MutationObserver，直接画一次 */
+  if (s1.classList.contains('active')){ played = true; select(items.length - 1); }
 })();
 
 /* ==========================================================
@@ -3775,6 +3899,8 @@ document.querySelectorAll('.flip').forEach(card => {  card.addEventListener('cli
     //    所以提交时只重画本地，云端结果等下次进入本屏时再合并。
     paint(arr);
     addClearBtn();
+    /* 弹幕也跟着换一批：新留言立刻飘过去 */
+    if (window.__eggRefreshDm) window.__eggRefreshDm();
 
     // 再尝试上云（失败也不影响本地保存）
     if (cloudOn()) {
@@ -4187,7 +4313,12 @@ window.createRing = function(opts){
        8 张卡时 SIN=sin22.5°=0.383 → 系数 ≈ 2.59，卡片占容器约 1/2.6，
        于是 R ≈ 2.1·cw，45° 与 90° 位置的横向投影差 ≈ 0.29R ≈ 0.6·cw，
        比半个卡宽大，前后排就不会糊在一起。 */
-    const allow = narrow ? 0.86 : 0.90;
+    let allow = narrow ? 0.86 : 0.90;
+    /* 12 卡 + 窄屏：外沿若严格压进屏内，卡宽会被压到 96px 的下限，
+       正面卡只有 139px 宽、侧卡 50px——不是环，是碎片。
+       coverflow 形态里卡片半出屏是正常的（正面的最大，两侧的出血），
+       这里放宽到 1.14 让卡宽回到 ~130px，观感立刻从"挤"变"满"。 */
+    if (narrow && N > 8) allow = 1.14;
     const outerCap = (W * allow) / (0.8 / SIN + 0.5);
     /* 尺寸上限：正面卡会被 perspective 放大，place() 里的 scFront 已经保证
        放大后仍装得进容器，所以这里可以给得宽一些 —— 卡越大越看得清。
@@ -4229,8 +4360,13 @@ window.createRing = function(opts){
        方位角越大 → 转得越多，但最多只转到 ±TILT_MAX(32°) 就封顶。
        于是正面卡端正、两侧卡明显斜过去有厚度感、远处的卡适度侧转，
        而任何一张卡都保留 85% 以上的可视宽度，图/视频始终看得清。 */
-    const LIFT     = narrow ? 26 : 40;   // 竖向错位幅度
-    const TILT_MAX = 42;                 // 斜转封顶角（度）：越大立体感越强，超过 50° 卡片就太扁
+    const LIFT     = narrow ? (N > 8 ? 44 : 26) : 40;   // 竖向错位幅度
+    /* 12 卡在窄屏上 STEP=30°，投影间隔只有 0.52 个卡宽，侧卡糊成一条缝。
+       对策：把斜转封顶角加大（侧面卡转得更侧 → 露出更窄但更"薄"，
+       视觉上是卡片而不是色块），同时非正面卡透明度上限压低，
+       让正面一张独大、周围是"环绕氛围"而不是"挤在一起"。 */
+    const TILT_MAX = narrow && N > 8 ? 52 : 42;
+    const OP_MIN   = narrow && N > 8 ? 0.10 : 0.26;     // 后排透明度下限
     cards.forEach((el, i) => {
       const a  = a0 + rad(i * STEP);
       const z  = Math.cos(a) * R;
@@ -4243,7 +4379,7 @@ window.createRing = function(opts){
       const maxFront   = (ring.clientHeight - LIFT - 12) / (perspBoost * chBase);
       const scFront    = Math.min(1.06, Math.max(0.8, maxFront));
       const sc  = (scFront - 0.40) + t * 0.40;              /* 前排 = scFront，后排 = scFront-0.4 */
-      const op = 0.26 + t * 0.74;
+      const op = OP_MIN + t * (1 - OP_MIN);
       /* 斜转角 = 方位角，但夹在 ±TILT_MAX 内（sin 取符号，保证左右对称） */
       const s  = Math.sin(a);
       const ry = -Math.sign(s) * Math.min(Math.abs(s), 1) * TILT_MAX;
@@ -5131,4 +5267,277 @@ window.createRing = function(opts){
   }
 
   syncState();
+})();
+
+
+/* ==========================================================
+   开场遮罩
+   ----------------------------------------------------------
+   新标签页的第一眼：暗幕 → 弥散光浮起 → 站名出现 → 揭幕。
+   · sessionStorage 记「这个标签页播过了」，刷新同一页不重播，
+     但关掉重开会再播一次 —— 仪式感留给自己人，不打扰回头客。
+   · prefers-reduced-motion 的用户 CSS 里直接 display:none，JS 兜底跳过。
+   ========================================================== */
+(function introVeil(){
+  const veil = document.getElementById('introVeil');
+  if (!veil) return;
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  let played = false;
+  try { played = sessionStorage.getItem('yh_intro') === '1'; } catch(e){}
+
+  if (reduce || played){
+    veil.remove();                       /* 不播就整个拿掉，别挡在页面最上层 */
+    return;
+  }
+  try { sessionStorage.setItem('yh_intro', '1'); } catch(e){}
+
+  /* 总时长：光 1.5s + 字 1.05s + 停 0.35s ≈ 2.2s 后揭幕 */
+  setTimeout(() => {
+    veil.classList.add('bye');
+    /* 揭完从 DOM 里拿掉，免得占着一层 fixed 还参与命中测试 */
+    setTimeout(() => { veil.remove(); }, 950);
+  }, 2250);
+})();
+
+/* ==========================================================
+   小惊喜彩蛋
+   ----------------------------------------------------------
+   两件小事：
+     ① 抽一段回忆 —— 从全部照片里随机抽一张，相纸弹出。
+        照片来源直接复用主环的数据 window.__ring.items，
+        不另开一份清单，免得两边照片对不上。
+     ② 留言弹幕 —— 星空屏把留言像字幕一样从星空中飘过。
+        只读展示，不碰星星本体；鼠标移到某条上会停住。
+   ========================================================== */
+(function egg(){
+  const reduce = window.matchMedia &&
+    window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* --------------------------------------------------------
+     一、抽一段回忆
+     -------------------------------------------------------- */
+  const drawBtn = document.getElementById('drawBtn');
+
+  /* 结果卡是懒创建的：不抽就不存在，不占 DOM */
+  let mask = null, card = null, imgEl = null;
+  let capB = null, capI = null;
+  let pool = [];                       /* 可抽的照片池 */
+  let lastIdx = -1;                    /* 上次抽到的下标，避免连续重复 */
+  let rolling = false;
+
+  function buildPool(){
+    const ring = window.__ring;
+    const raw = (ring && ring.items) || [];
+    pool = raw.filter(it =>
+      it &&
+      it.kind !== 'video' &&           /* 视频卡抽不出来，抽到没法"看图" */
+      !it.ph &&                       /* ph:true 是占位骨架，没有真图 */
+      it.src
+    );
+    /* 万一主环还没建好（理论上不会，主环在文件前部先执行），
+       退化成从页面里扫所有真实照片，保证按钮点了永远有反应 */
+    if (!pool.length){
+      pool = Array.from(document.querySelectorAll('.ring-face img'))
+        .filter(im => im.getAttribute('src'))
+        .map(im => ({ title:'', src: im.getAttribute('src') }));
+    }
+    return pool;
+  }
+
+  function buildCard(){
+    mask = document.createElement('div');
+    mask.className = 'draw-mask';
+    mask.setAttribute('aria-hidden', 'true');
+
+    card = document.createElement('div');
+    card.className = 'draw-card';
+    card.setAttribute('role', 'dialog');
+    card.setAttribute('aria-modal', 'true');
+    card.setAttribute('aria-label', '命运抽到的回忆');
+
+    const tag = document.createElement('span');
+    tag.className = 'draw-tag';
+    tag.textContent = '命 运 之 选';
+
+    const frame = document.createElement('div');
+    frame.className = 'dc-frame';
+    imgEl = document.createElement('img');
+    imgEl.alt = '抽到的回忆';
+    imgEl.decoding = 'async';
+    frame.appendChild(imgEl);
+
+    const cap = document.createElement('div');
+    cap.className = 'dc-cap';
+    capB = document.createElement('b');
+    capI = document.createElement('i');
+    cap.appendChild(capB);
+    cap.appendChild(capI);
+    frame.appendChild(cap);
+
+    const x = document.createElement('button');
+    x.className = 'draw-x';
+    x.type = 'button';
+    x.setAttribute('aria-label', '关闭');
+    x.textContent = '✕';
+
+    const again = document.createElement('button');
+    again.className = 'draw-again';
+    again.type = 'button';
+    again.textContent = '再 抽 一 次';
+
+    card.appendChild(tag);
+    card.appendChild(x);
+    card.appendChild(frame);
+    card.appendChild(again);
+    mask.appendChild(card);
+    document.body.appendChild(mask);
+
+    x.addEventListener('click', close);
+    again.addEventListener('click', () => pick(true));
+    mask.addEventListener('click', e => { if (e.target === mask) close(); });
+  }
+
+  function pick(isAgain){
+    if (!pool.length && !buildPool().length) return;
+
+    /* 抽签的仪式感：按钮先晃一下再出结果 */
+    if (drawBtn && !isAgain && !reduce){
+      drawBtn.classList.remove('rolling');
+      void drawBtn.offsetWidth;
+      drawBtn.classList.add('rolling');
+      setTimeout(() => drawBtn.classList.remove('rolling'), 520);
+    }
+
+    let i = Math.floor(Math.random() * pool.length);
+    if (pool.length > 1 && i === lastIdx) i = (i + 1) % pool.length;
+    lastIdx = i;
+    const it = pool[i];
+
+    if (!mask) buildCard();
+
+    /* 图片优先走 webp（复用全站的加载器），没命中自动退回 jpg */
+    const url = it.src;
+    if (window.__setImg) window.__setImg(imgEl, url);
+    else imgEl.src = url;
+
+    capB.textContent = it.title || '一张没来得及命名的照片';
+    const sub = it.sub || '';
+    capI.textContent = sub ? sub + ' · 抽到就是缘分' : '抽到就是缘分';
+    capI.hidden = false;
+
+    mask.classList.add('open');
+    mask.setAttribute('aria-hidden', 'false');
+    document.documentElement.classList.add('draw-mode');
+  }
+
+  function close(){
+    if (!mask) return;
+    mask.classList.remove('open');
+    mask.setAttribute('aria-hidden', 'true');
+    document.documentElement.classList.remove('draw-mode');
+  }
+
+  if (drawBtn){
+    buildPool();
+    drawBtn.addEventListener('click', () => pick(false));
+    document.addEventListener('keydown', e => {
+      if (!mask || !mask.classList.contains('open')) return;
+      if (e.key === 'Escape'){ e.preventDefault(); close(); }
+    }, true);
+  }
+
+  /* --------------------------------------------------------
+     二、留言弹幕（星空屏）
+     -------------------------------------------------------- */
+  const layer = document.getElementById('dmLayer');
+  const skySlide = document.getElementById('s9');
+  const GB_KEY = 'yh_guestbook_v1';
+
+  let dmTimer = 0;
+  let lastHash = '';                   /* 留言没变就不重铺，免得白重置动画 */
+
+  function readMsgs(){
+    try {
+      const arr = JSON.parse(localStorage.getItem(GB_KEY) || '[]');
+      return Array.isArray(arr) ? arr : [];
+    } catch(e){ return []; }
+  }
+
+  function stopDm(){
+    clearInterval(dmTimer);
+    dmTimer = 0;
+    if (layer) layer.innerHTML = '';
+  }
+
+  function spawn(){
+    if (!layer) return;
+    const msgs = readMsgs();
+    if (!msgs.length){ stopDm(); return; }
+
+    const one = msgs[Math.floor(Math.random() * msgs.length)];
+    const el = document.createElement('div');
+    el.className = 'dm-item';
+
+    const name = document.createElement('b');
+    name.textContent = (one.name || '匿名').slice(0, 16);
+    el.appendChild(name);
+    el.appendChild(document.createTextNode((one.msg || '').slice(0, 120)));
+
+    /* 随机轨道：避开最上最下各 12%，中间均匀落点 */
+    el.style.top = (12 + Math.random() * 74).toFixed(1) + '%';
+
+    /* 时长按文字长度走，长句子走得久一点，速度感才一致 */
+    const dist = el.textContent.length;
+    const dur = (11 + dist * 0.28 + Math.random() * 3.5).toFixed(1);
+    el.style.animationDuration = dur + 's';
+
+    /* 从右侧进场：负 delay 让首屏就填满，而不是一条条慢慢来 */
+    el.style.animationDelay = (Math.random() * -1.6).toFixed(2) + 's';
+
+    el.addEventListener('animationend', () => el.remove());
+    layer.appendChild(el);
+
+    /* 防止极端情况下动画没触发 animationend，兜一层回收 */
+    setTimeout(() => { if (el.parentNode) el.remove(); }, (parseFloat(dur) + 4) * 1000);
+  }
+
+  function startDm(){
+    if (!layer || reduce) return;
+    const msgs = readMsgs();
+    const hash = msgs.map(m => (m.ts || '') + (m.name || '')).join('|');
+    if (hash === lastHash && dmTimer) return;    /* 同一批留言，别重来 */
+    lastHash = hash;
+
+    stopDm();
+    if (msgs.length < 2) return;                 /* 只有一两条，飘起来很怪 */
+
+    /* 先撒 4 条铺满画面 */
+    for (let i = 0; i < Math.min(4, msgs.length); i++) spawn();
+    /* 之后每 2.6~4s 再来一条 */
+    dmTimer = setInterval(() => {
+      spawn();
+      /* 自己管回收：层里留太多就清掉最老的 */
+      while (layer.children.length > 18) layer.removeChild(layer.firstChild);
+    }, 3200);
+  }
+
+  if (layer && skySlide){
+    /* 复用星空屏的激活钩子：进入就播，离开就停 */
+    new MutationObserver(() => {
+      if (skySlide.classList.contains('active')) startDm();
+      else stopDm();
+    }).observe(skySlide, { attributes:true, attributeFilter:['class'] });
+
+    /* 切后台回来时动画时序会被冻结，重来一遍更自然 */
+    document.addEventListener('visibilitychange', () => {
+      if (document.hidden) stopDm();
+      else if (skySlide.classList.contains('active')){ lastHash = ''; startDm(); }
+    });
+
+    /* 首屏就是星空屏时不会经过 MutationObserver */
+    if (skySlide.classList.contains('active')) startDm();
+  }
+
+  /* 给留言提交后的刷新用：留言变了，弹幕也跟着换一批 */
+  window.__eggRefreshDm = () => { lastHash = ''; if (skySlide && skySlide.classList.contains('active')) startDm(); };
 })();
