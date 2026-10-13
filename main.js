@@ -214,6 +214,11 @@ function setActive(){
   // 左上角名字：仅首屏显示
   if (navLogo) navLogo.classList.toggle('fade', cur !== 0);
 
+  // 星空屏标记：站长入口小把手只在星空屏露出来
+  const curSlide = slides[cur];
+  document.documentElement.classList.toggle(
+    'on-star', !!(curSlide && curSlide.classList.contains('star-slide')));
+
   // 引导标志：显示"下一屏"名称；最后一屏显示回到开头
   updateGuide();
   updatePager();
@@ -4938,4 +4943,192 @@ window.createRing = function(opts){
 
   /* 暴露给环使用 */
   window.__lb = { show, close, isOpen(){ return open; } };
+})();
+
+
+/* ==========================================================
+   站长入口（手机端进站长模式）
+   ----------------------------------------------------------
+   背景：删除星星、清空留言这些权限只在「站长模式」下出现，
+   而站长模式靠网址 ?owner=1 或本机记忆判定。手机上没有地址栏，
+   敲不出 query，所以给一个点得到的小把手。
+
+   安全做法：密码不写进代码，只存 SHA-256(salt + 密码) 的结果。
+   输进去的密码在本地算一遍哈希、和常量比对，对了才写入身份记忆。
+   这样别人查看源码也拿不到密码，只能老老实实猜。
+
+   哈希是在构建时用 Python 算好写进来的：
+     >>> hashlib.sha256(('yanhan-site-2026' + '20080101').encode()).hexdigest()
+   ========================================================== */
+(function ownerGate(){
+  const key    = document.getElementById('ownerKey');
+  const modal  = document.getElementById('ownerModal');
+  const input  = document.getElementById('ownerInput');
+  const errEl  = document.getElementById('ownerErr');
+  const okEl   = document.getElementById('ownerOk');
+  const cancelEl = document.getElementById('ownerCancel');
+  const outEl  = document.getElementById('ownerOut');
+  if (!key || !modal || !input) return;
+
+  /* 盐 + 哈希。盐本身不敏感，只是让彩虹表没法直接命中常见口令。 */
+  const SALT = 'yanhan-site-2026';
+  const HASH = 'c5b37842299f7ce532dcc6a312d0859d7ea7b857b808bd7f2bf353bf1a4ca29e';
+
+  /* 把一段文字算成 SHA-256 十六进制。
+     优先用 WebCrypto（https / localhost 下可用）；
+     本地 file:// 打开时 crypto.subtle 是 undefined，退到纯 JS 实现，
+     否则「下载下来双击打开」的情况就永远进不去站长模式。 */
+  function sha256Hex(text){
+    if (window.crypto && window.crypto.subtle && window.crypto.subtle.digest){
+      const buf = new TextEncoder().encode(text);
+      return window.crypto.subtle.digest('SHA-256', buf).then(ab => {
+        const b = new Uint8Array(ab);
+        let s = '';
+        for (let i = 0; i < b.length; i++) s += b[i].toString(16).padStart(2, '0');
+        return s;
+      });
+    }
+    return Promise.resolve(sha256Fallback(text));
+  }
+
+  /* 纯 JS 的 SHA-256（只在没有 WebCrypto 时用，比如本地 file:// 打开） */
+  function sha256Fallback(ascii){
+    function rr(v, a){ return (v >>> a) | (v << (32 - a)); }
+    /* 前 64 个素数立方根小数部分的前 32 位 */
+    const K = [
+      0x428a2f98,0x71374491,0xb5c0fbcf,0xe9b5dba5,0x3956c25b,0x59f111f1,0x923f82a4,0xab1c5ed5,
+      0xd807aa98,0x12835b01,0x243185be,0x550c7dc3,0x72be5d74,0x80deb1fe,0x9bdc06a7,0xc19bf174,
+      0xe49b69c1,0xefbe4786,0x0fc19dc6,0x240ca1cc,0x2de92c6f,0x4a7484aa,0x5cb0a9dc,0x76f988da,
+      0x983e5152,0xa831c66d,0xb00327c8,0xbf597fc7,0xc6e00bf3,0xd5a79147,0x06ca6351,0x14292967,
+      0x27b70a85,0x2e1b2138,0x4d2c6dfc,0x53380d13,0x650a7354,0x766a0abb,0x81c2c92e,0x92722c85,
+      0xa2bfe8a1,0xa81a664b,0xc24b8b70,0xc76c51a3,0xd192e819,0xd6990624,0xf40e3585,0x106aa070,
+      0x19a4c116,0x1e376c08,0x2748774c,0x34b0bcb5,0x391c0cb3,0x4ed8aa4a,0x5b9cca4f,0x682e6ff3,
+      0x748f82ee,0x78a5636f,0x84c87814,0x8cc70208,0x90befffa,0xa4506ceb,0xbef9a3f7,0xc67178f2
+    ];
+    const init = [0x6a09e667,0xbb67ae85,0x3c6ef372,0xa54ff53a,
+                  0x510e527f,0x9b05688c,0x1f83d9ab,0x5be0cd19];
+
+    /* UTF-8 编码 */
+    const bytes = [];
+    for (let i = 0; i < ascii.length; i++){
+      const c = ascii.charCodeAt(i);
+      if (c < 128) bytes.push(c);
+      else if (c < 2048){ bytes.push(192 | (c >> 6), 128 | (c & 63)); }
+      else { bytes.push(224 | (c >> 12), 128 | ((c >> 6) & 63), 128 | (c & 63)); }
+    }
+    const bitLen = bytes.length * 8;
+    bytes.push(0x80);
+    while (bytes.length % 64 !== 56) bytes.push(0);
+    /* 长度以大端 64 位写在末尾 */
+    for (let i = 7; i >= 0; i--) bytes.push(Math.floor(bitLen / Math.pow(2, i * 8)) & 0xff);
+
+    const w = new Array(64);
+    for (let off = 0; off < bytes.length; off += 64){
+      for (let i = 0; i < 16; i++){
+        w[i] = ((bytes[off+i*4] << 24) | (bytes[off+i*4+1] << 16) |
+                (bytes[off+i*4+2] << 8) | bytes[off+i*4+3]) | 0;
+      }
+      for (let i = 16; i < 64; i++){
+        const s0 = rr(w[i-15],7) ^ rr(w[i-15],18) ^ (w[i-15] >>> 3);
+        const s1 = rr(w[i-2],17) ^ rr(w[i-2],19) ^ (w[i-2] >>> 10);
+        w[i] = (w[i-16] + s0 + w[i-7] + s1) | 0;
+      }
+      let a=init[0],b=init[1],c=init[2],d=init[3],
+          e=init[4],f=init[5],g=init[6],h=init[7];
+      for (let i = 0; i < 64; i++){
+        const S1 = rr(e,6) ^ rr(e,11) ^ rr(e,25);
+        const ch = (e & f) ^ (~e & g);
+        const t1 = (h + S1 + ch + K[i] + w[i]) | 0;
+        const S0 = rr(a,2) ^ rr(a,13) ^ rr(a,22);
+        const mj = (a & b) ^ (a & c) ^ (b & c);
+        const t2 = (S0 + mj) | 0;
+        h=g; g=f; f=e; e=(d+t1)|0; d=c; c=b; b=a; a=(t1+t2)|0;
+      }
+      init[0]=(init[0]+a)|0; init[1]=(init[1]+b)|0; init[2]=(init[2]+c)|0; init[3]=(init[3]+d)|0;
+      init[4]=(init[4]+e)|0; init[5]=(init[5]+f)|0; init[6]=(init[6]+g)|0; init[7]=(init[7]+h)|0;
+    }
+    return init.map(x => (x >>> 0).toString(16).padStart(8, '0')).join('');
+  }
+
+  let isOwner = window.__IS_OWNER === true;
+
+  /* 标记身份状态，CSS 靠这两个类决定小把手的样子和"退出"按钮 */
+  function syncState(){
+    document.documentElement.classList.toggle('is-owner', isOwner);
+    if (outEl) outEl.hidden = !isOwner;
+    if (isOwner){
+      document.getElementById('ownerTitle').textContent = '已在站长模式';
+      document.querySelector('.owner-sub').textContent = '这台设备已经记住你了';
+      okEl.textContent = '关闭';
+    } else {
+      document.getElementById('ownerTitle').textContent = '输入密码';
+      document.querySelector('.owner-sub').textContent = '验证一次，这台设备就会记住你';
+      okEl.textContent = '进入';
+    }
+  }
+
+  function open(){
+    modal.classList.add('show');
+    errEl.textContent = '';
+    input.value = '';
+    syncState();
+    if (!isOwner) setTimeout(() => { try { input.focus(); } catch(e){} }, 380);
+  }
+  function close(){
+    modal.classList.remove('show');
+    input.blur();
+  }
+
+  function submit(){
+    if (isOwner){ close(); return; }
+    const v = (input.value || '').trim();
+    if (!v){ errEl.textContent = '还没输入'; return; }
+
+    sha256Hex(SALT + v).then(hex => {
+      if (hex === HASH){
+        try { localStorage.setItem('yh_owner', 'owner'); } catch(e){}
+        window.__IS_OWNER = true;
+        isOwner = true;
+        errEl.textContent = '';
+        errEl.style.color = '#8fd6b4';
+        errEl.textContent = '✓ 已进入站长模式';
+        syncState();
+        /* 让留言板/星空重新按站长身份渲染，删除键才会出现 */
+        setTimeout(() => { location.reload(); }, 650);
+      } else {
+        errEl.style.color = '#f7a8c4';
+        errEl.textContent = '密码不对，再试试';
+        input.classList.remove('bad');
+        void input.offsetWidth;          /* 强制重排，让抖动动画能重复播 */
+        input.classList.add('bad');
+        input.select();
+      }
+    });
+  }
+
+  key.addEventListener('click', open);
+  cancelEl.addEventListener('click', close);
+  okEl.addEventListener('click', submit);
+  input.addEventListener('keydown', e => {
+    if (e.key === 'Enter'){ e.preventDefault(); submit(); }
+  });
+  modal.addEventListener('click', e => { if (e.target === modal) close(); });
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape' && modal.classList.contains('show')){ e.preventDefault(); close(); }
+  }, true);
+
+  /* 退出站长模式 */
+  if (outEl){
+    outEl.addEventListener('click', () => {
+      try { localStorage.setItem('yh_owner', 'guest'); } catch(e){}
+      window.__IS_OWNER = false;
+      isOwner = false;
+      syncState();
+      setTimeout(() => {
+        location.href = location.pathname + '?owner=0';
+      }, 300);
+    });
+  }
+
+  syncState();
 })();
