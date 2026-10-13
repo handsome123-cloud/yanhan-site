@@ -3387,3 +3387,346 @@ html.is-owner .owner-key{color:var(--halo-butter);border-color:rgba(247,232,168,
   .owner-box{padding:24px 18px 20px;border-radius:20px}
   .owner-key{width:30px;height:30px;font-size:.78rem;bottom:clamp(66px,10vh,86px)}
 }
+
+/* ==========================================================
+   时间轴升级：年份滑块 + 年度关键词 + 数据条
+   ----------------------------------------------------------
+   拖动滑块（或点某个年份节点）→ 下面的详情卡换内容。
+   详情卡里有两块：
+     · 关键词标签：一句话概括那几年
+     · 数据条：把"那段时间发生了多少事"画成横条
+   ========================================================== */
+
+/* ---------- 滑块 ---------- */
+.tl-slider{
+  position:relative;
+  margin:22px 0 6px;
+}
+.tl-range{
+  -webkit-appearance:none;appearance:none;
+  width:100%;height:4px;border-radius:4px;outline:none;cursor:pointer;
+  background:linear-gradient(90deg,
+    var(--halo-peach) 0%, var(--halo-sky) 34%,
+    var(--halo-mint) 67%, var(--halo-lilac) 100%);
+  opacity:.85;
+}
+.tl-range::-webkit-slider-thumb{
+  -webkit-appearance:none;width:18px;height:18px;border-radius:50%;
+  background:#fff;cursor:grab;
+  border:2px solid color-mix(in srgb, var(--halo-peach) 70%, #fff);
+  box-shadow:0 3px 12px rgba(80,60,110,.35);
+  transition:transform .25s cubic-bezier(.22,1,.36,1),box-shadow .25s;
+}
+.tl-range::-webkit-slider-thumb:hover{transform:scale(1.18)}
+.tl-range:active::-webkit-slider-thumb{cursor:grabbing;transform:scale(1.26)}
+.tl-range::-moz-range-thumb{
+  width:18px;height:18px;border-radius:50%;background:#fff;cursor:grab;
+  border:2px solid color-mix(in srgb, var(--halo-peach) 70%, #fff);
+  box-shadow:0 3px 12px rgba(80,60,110,.35);
+}
+
+/* 刻度：四个标签对齐到滑块的位置 */
+.tl-ticks{
+  display:flex;justify-content:space-between;
+  margin-top:9px;
+}
+.tl-ticks span{
+  flex:1;text-align:center;cursor:pointer;
+  font-size:.62rem;letter-spacing:.08em;color:var(--ink-faint);
+  transition:color .3s,transform .3s;
+}
+.tl-ticks span:first-child{text-align:left}
+.tl-ticks span:last-child{text-align:right}
+.tl-ticks span:hover{color:var(--ink-soft)}
+.tl-ticks span.on{color:var(--ink);transform:translateY(-1px)}
+
+/* ---------- 详情卡 ---------- */
+.tl-detail{
+  margin-top:20px;padding:18px 20px;
+  border-radius:18px;
+  background:var(--glass-soft);
+  border:1px solid var(--glass-line);
+}
+.tld-kicker{
+  font-size:.6rem;letter-spacing:.32em;color:var(--halo-peach);
+  margin-bottom:11px;
+}
+.tld-tags{
+  display:flex;flex-wrap:wrap;gap:8px;
+}
+.tld-tags span{
+  padding:5px 14px;border-radius:100px;
+  font-size:.73rem;letter-spacing:.06em;color:var(--ink-soft);
+  border:1px solid var(--edge-line);
+  background:color-mix(in srgb, var(--paper) 62%, transparent);
+  /* 标签逐个浮现 */
+  opacity:0;transform:translateY(6px) scale(.94);
+  animation:tldTagIn .46s cubic-bezier(.22,1,.36,1) forwards;
+}
+@keyframes tldTagIn{to{opacity:1;transform:none}}
+.tld-note{
+  margin-top:12px;font-size:.79rem;line-height:1.85;
+  color:var(--ink-soft);letter-spacing:.03em;
+}
+.tld-stats{
+  margin-top:16px;display:flex;flex-direction:column;gap:11px;
+}
+.tld-row{
+  display:flex;align-items:center;gap:11px;
+  font-size:.71rem;letter-spacing:.05em;
+}
+.tld-row .tld-label{
+  flex:none;width:clamp(58px,18vw,84px);color:var(--ink-faint);
+}
+.tld-bar{
+  flex:1;height:6px;border-radius:6px;overflow:hidden;
+  background:color-mix(in srgb, var(--ink) 8%, transparent);
+}
+.tld-bar i{
+  display:block;height:100%;border-radius:6px;width:0;
+  background:linear-gradient(90deg,var(--halo-peach),var(--halo-rose));
+  transition:width .78s cubic-bezier(.22,1,.36,1);
+}
+.tld-row:nth-child(2) .tld-bar i{background:linear-gradient(90deg,var(--halo-sky),var(--halo-lilac))}
+.tld-row:nth-child(3) .tld-bar i{background:linear-gradient(90deg,var(--halo-mint),var(--halo-sky))}
+.tld-row .tld-val{
+  flex:none;min-width:42px;text-align:right;
+  color:var(--ink-soft);font-variant-numeric:tabular-nums;
+}
+
+/* ==========================================================
+   开场遮罩（每次新会话第一眼）
+   ----------------------------------------------------------
+   暗幕里浮起一团弥散光 → 站名一个个显出来 → 整幕向上揭开。
+   三段动画全部串在 CSS 里，JS 只负责「播不播」和「揭开后清理」。
+   ========================================================== */
+.intro-veil{
+  position:fixed;inset:0;z-index:9800;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;
+  background:#141021;
+  /* 揭幕：向上滑走 + 淡出，由 .bye 触发 */
+  transition:transform .9s cubic-bezier(.65,0,.35,1),opacity .9s ease;
+}
+.intro-veil.bye{
+  transform:translateY(-100%);
+  opacity:0;
+  pointer-events:none;
+}
+/* 弥散光：从看不见到浮起来 */
+.iv-aura{
+  position:absolute;inset:0;
+  background:
+    radial-gradient(520px 400px at 50% 44%, rgba(255,196,180,.26), transparent 70%),
+    radial-gradient(640px 520px at 44% 62%, rgba(150,140,255,.24), transparent 72%),
+    radial-gradient(460px 380px at 60% 30%, rgba(255,150,170,.16), transparent 70%);
+  opacity:0;transform:scale(1.12);
+  animation:ivAura 1.5s cubic-bezier(.22,1,.36,1) forwards;
+}
+@keyframes ivAura{to{opacity:1;transform:scale(1)}}
+.iv-name{
+  position:relative;
+  font-family:var(--serif);font-weight:900;
+  font-size:clamp(2.6rem,9vw,4.4rem);
+  letter-spacing:.14em;color:#fff;
+  text-shadow:0 6px 40px rgba(20,10,50,.6);
+  opacity:0;transform:translateY(14px);
+  animation:ivName .9s cubic-bezier(.22,1,.36,1) .45s forwards;
+}
+.iv-name em{font-style:normal;color:var(--halo-peach)}
+@keyframes ivName{to{opacity:1;transform:none}}
+.iv-sub{
+  position:relative;
+  font-size:clamp(.66rem,2vw,.78rem);
+  letter-spacing:.5em;text-indent:.5em;   /* 让字距视觉居中 */
+  color:rgba(255,255,255,.6);
+  opacity:0;
+  animation:ivSub .8s ease 1.05s forwards;
+}
+@keyframes ivSub{to{opacity:1}}
+
+@media(prefers-reduced-motion:reduce){
+  .intro-veil{display:none}
+}
+
+/* ==========================================================
+   随机回忆抽签
+   ----------------------------------------------------------
+   点一下从主环 11 张照片里随机抽一张，像抽签一样摇出来。
+   抽中后卡片会翻出来 —— 用的是和相册灯箱同一套"相纸"语言。
+   ========================================================== */
+.draw-row{
+  margin-top:24px;display:flex;justify-content:center;
+}
+.draw-btn{
+  position:relative;overflow:hidden;
+  display:inline-flex;align-items:center;gap:11px;
+  padding:14px 30px;border-radius:100px;cursor:pointer;
+  font-family:inherit;font-size:.88rem;letter-spacing:.1em;
+  color:var(--ink);
+  border:1px solid var(--edge-line);
+  background:var(--glass);
+  -webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);
+  box-shadow:0 14px 34px -20px rgba(80,60,110,.55);
+  transition:transform .42s cubic-bezier(.22,1,.36,1),background .42s,box-shadow .42s,color .42s;
+}
+.draw-btn svg{width:18px;height:18px;flex:none}
+.draw-btn .draw-sub{
+  font-style:normal;font-size:.68rem;letter-spacing:.08em;
+  color:var(--ink-faint);transition:color .4s;
+}
+.draw-btn:hover{
+  background:linear-gradient(135deg,var(--halo-peach),var(--halo-rose));
+  color:#fff;border-color:transparent;
+  transform:translateY(-2px);
+  box-shadow:0 20px 44px -22px rgba(200,120,150,.75);
+}
+.draw-btn:hover .draw-sub{color:rgba(255,255,255,.75)}
+.draw-btn:active{transform:translateY(0) scale(.98)}
+/* 抽签中的摇晃 */
+.draw-btn.rolling{animation:drawShake .5s ease-in-out}
+@keyframes drawShake{
+  0%,100%{transform:rotate(0)}
+  20%{transform:rotate(-2.4deg) scale(1.02)}
+  50%{transform:rotate(2.4deg) scale(1.04)}
+  80%{transform:rotate(-1.2deg) scale(1.02)}
+}
+
+/* ---------- 抽签结果卡（复用灯箱外壳，但内容不同） ---------- */
+.draw-mask{
+  position:fixed;inset:0;z-index:9100;
+  display:flex;align-items:center;justify-content:center;
+  padding:clamp(14px,3vw,40px);
+  background:rgba(28,22,44,.74);
+  -webkit-backdrop-filter:blur(18px) saturate(1.1);
+  backdrop-filter:blur(18px) saturate(1.1);
+  opacity:0;pointer-events:none;
+  transition:opacity .32s cubic-bezier(.22,1,.36,1);
+}
+.draw-mask.open{opacity:1;pointer-events:auto}
+.draw-card{
+  position:relative;max-width:min(92vw,520px);
+  transform:scale(.9) rotate(-3deg);opacity:0;
+  transition:transform .5s cubic-bezier(.22,1,.36,1),opacity .34s;
+}
+.draw-mask.open .draw-card{transform:scale(1) rotate(-1.4deg);opacity:1}
+/* 相纸 */
+.draw-card .dc-frame{
+  padding:clamp(9px,1.5vw,15px) clamp(9px,1.5vw,15px) clamp(34px,4.4vw,50px);
+  border-radius:6px;
+  background:linear-gradient(160deg,#fffefb,#f4f1ec 62%,#eeeae3);
+  box-shadow:0 44px 92px -34px rgba(10,6,24,.74);
+}
+.draw-card .dc-frame img{
+  display:block;width:100%;max-height:min(58vh,560px);
+  object-fit:cover;border-radius:2px;
+  background:linear-gradient(135deg,rgba(190,196,220,.18),rgba(230,200,210,.18));
+}
+.draw-card .dc-cap{
+  position:absolute;left:0;right:0;bottom:clamp(10px,1.6vw,16px);
+  text-align:center;color:#6b6178;
+}
+.draw-card .dc-cap b{display:block;font-size:.94rem;font-weight:700;letter-spacing:.04em}
+.draw-card .dc-cap i{font-style:normal;font-size:.72rem;opacity:.8}
+.draw-x{
+  position:absolute;top:clamp(10px,2.4vw,22px);right:clamp(10px,2.4vw,22px);
+  width:44px;height:44px;border:0;border-radius:50%;cursor:pointer;
+  font-size:1.15rem;line-height:1;color:#fff;
+  background:rgba(255,255,255,.14);
+  -webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);
+  transition:background .25s,transform .25s;z-index:2;
+}
+.draw-x:hover{background:rgba(255,255,255,.26);transform:rotate(90deg)}
+/* 底下"再抽一次" */
+.draw-again{
+  margin-top:16px;display:block;width:100%;
+  padding:11px 22px;border-radius:100px;cursor:pointer;
+  font-family:inherit;font-size:.78rem;letter-spacing:.14em;color:#fff;
+  border:1px solid rgba(255,255,255,.26);
+  background:rgba(255,255,255,.1);
+  -webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);
+  transition:background .3s,transform .3s,border-color .3s;
+}
+.draw-again:hover{background:rgba(255,255,255,.24);border-color:rgba(255,255,255,.45);transform:translateY(-1px)}
+.draw-again:active{transform:translateY(0) scale(.98)}
+.draw-tag{
+  position:absolute;top:clamp(-10px,-1.4vw,-6px);left:clamp(16px,3vw,26px);
+  z-index:2;
+  padding:5px 14px;border-radius:100px;
+  font-size:.62rem;letter-spacing:.24em;color:#4a3f5e;
+  background:linear-gradient(135deg,var(--halo-butter),var(--halo-peach));
+  box-shadow:0 8px 20px -10px rgba(180,140,110,.8);
+}
+
+/* ==========================================================
+   留言弹幕（星空屏）
+   ----------------------------------------------------------
+   留言以字幕形式从星空上飘过，只读展示。
+   aria-hidden 是刻意的：这是氛围，正文在星星弹层里读。
+   鼠标移到某条上会停下（方便看清），离开继续。
+   ========================================================== */
+.dm-layer{
+  position:absolute;inset:0;overflow:hidden;pointer-events:none;
+  z-index:3;border-radius:inherit;
+}
+.dm-item{
+  position:absolute;left:100%;white-space:nowrap;
+  padding:5px 16px;border-radius:100px;
+  font-size:.76rem;letter-spacing:.05em;
+  color:rgba(255,255,255,.82);
+  background:rgba(255,255,255,.07);
+  border:1px solid rgba(255,255,255,.13);
+  -webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);
+  pointer-events:auto;cursor:default;
+  animation:dmFly linear forwards;
+  will-change:transform;
+}
+.dm-item b{font-weight:500;color:var(--halo-butter);margin-right:7px;font-size:.72rem}
+.dm-item:hover{animation-play-state:paused;background:rgba(255,255,255,.14)}
+@keyframes dmFly{
+  from{transform:translateX(0)}
+  to{transform:translateX(calc(-100% - 100vw))}
+}
+@media(prefers-reduced-motion:reduce){
+  .dm-layer{display:none}
+}
+/* 抽签卡打开时锁住页面滚动（防止背景跟着滚） */
+html.draw-mode{overflow:hidden}
+
+/* ==========================================================
+   细节修复
+   ========================================================== */
+/* ① 手机横屏：弹层贴边 / 溢出
+   横屏高度只有 ~390px，star-box 内容约 300px + padding 20px，
+   视觉上顶天立地。收紧内边距、限制最大高并允许滚动。 */
+@media(max-width:900px) and (max-height:520px){
+  .star-modal,.gb-modal,.lb-mask,.draw-mask,.owner-modal,.share-mask{
+    padding:10px;
+    align-items:flex-start;
+    overflow-y:auto;
+  }
+  .star-modal,.gb-modal,.lb-mask,.draw-mask,.owner-modal,.share-mask{
+    align-items:center;      /* 高度够时仍居中，超高时靠滚动 */
+  }
+  .star-box{
+    max-width:400px;
+    padding:16px 18px 14px;
+    border-radius:18px;
+    margin:auto 0;           /* 配合 flex-start + auto margin：能居中则居中，超高可滚 */
+  }
+  .star-who{margin-bottom:8px;font-size:.96rem}
+  .star-what{font-size:.84rem;line-height:1.7}
+  .star-when{margin-top:10px;font-size:.64rem}
+  .star-actions{margin-top:14px;gap:8px}
+  .star-close,.star-del{padding:7px 18px;font-size:.74rem}
+  .draw-card{max-width:min(88vw,420px)}
+  .draw-card .dc-frame img{max-height:44vh}
+  .owner-box{padding:18px 16px 16px;border-radius:18px}
+  .share-panel{padding:20px 16px 16px;border-radius:18px;max-height:92vh;overflow-y:auto}
+  .share-qr{width:150px;height:150px}
+}
+
+/* ② 影像记忆环 12 张卡：侧卡略挤
+   几何由 main.js 的闭式解统一算（cw 会被写进 inline style，CSS 管不了），
+   窄屏 12 卡的观感修复在 JS：place() 里放宽外沿出血、加大斜转角、
+   压低后排透明度（搜 "12 卡 + 窄屏"）。 */
+#s4 .ring-card{transition:opacity .3s,filter .3s}
