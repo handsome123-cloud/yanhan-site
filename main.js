@@ -5455,6 +5455,8 @@ window.createRing = function(opts){
 
   let dmTimer = 0;
   let lastHash = '';                   /* 留言没变就不重铺，免得白重置动画 */
+  let queue = [];                      /* 本轮待发的留言（洗过牌） */
+  let lastSentKey = '';                /* 上一条发出去的留言指纹 */
 
   function readMsgs(){
     try {
@@ -5463,18 +5465,60 @@ window.createRing = function(opts){
     } catch(e){ return []; }
   }
 
-  function stopDm(){
+  function keyOf(m){
+    return (m && ((m.ts || '') + '|' + (m.name || '') + '|' + (m.msg || ''))) || '';
+  }
+
+  function stopDm(keepQueue){
     clearInterval(dmTimer);
     dmTimer = 0;
+    /* ⚠️ 默认连队列一起清（离开星空屏、关弹幕都该重来）。
+       但 startDm 内部重启时必须 keepQueue —— 否则「停一下再开」
+       会把已经发出去的牌重新洗一遍，屏幕上就出现同一条重复飘过。 */
+    if (!keepQueue) queue = [];
     if (layer) layer.innerHTML = '';
   }
 
-  function spawn(){
+  /* Fisher–Yates 洗牌，原地打乱后返回。
+     用洗牌而不是"每次随机取"：随机取会反复抽中同一条，
+     屏幕上一会儿是同一个人在刷屏。洗牌保证一轮里每条只出一次。 */
+  function shuffle(arr){
+    for (let i = arr.length - 1; i > 0; i--){
+      const j = Math.floor(Math.random() * (i + 1));
+      const t = arr[i]; arr[i] = arr[j]; arr[j] = t;
+    }
+    return arr;
+  }
+
+  /* 取下一个待发的留言。
+     队列空了 → 重新洗牌开下一轮。
+     ⚠️ 新一轮要排掉刚发过的那条，否则轮次交界处会连续出现同一条。 */
+  function takeOne(msgs){
+    if (!queue.length){
+      queue = shuffle(msgs.slice());
+      /* 队首正好是上一条发过的 → 跟后一位换个位置 */
+      if (queue.length > 1 && lastSentKey && keyOf(queue[0]) === lastSentKey){
+        const t = queue[0]; queue[0] = queue[1]; queue[1] = t;
+      }
+    }
+    return queue.shift();
+  }
+
+  /* 取一条出来并标记为已发 */
+  function pickOne(msgs){
+    const one = takeOne(msgs);
+    lastSentKey = keyOf(one);
+    return one;
+  }
+
+  function spawn(delay){
     if (!layer) return;
     const msgs = readMsgs();
-    if (!msgs.length){ stopDm(); return; }
+    if (msgs.length < 2){ stopDm(); return; }
 
-    const one = msgs[Math.floor(Math.random() * msgs.length)];
+    const one = pickOne(msgs);
+    if (!one) return;
+
     const el = document.createElement('div');
     el.className = 'dm-item';
 
@@ -5491,8 +5535,8 @@ window.createRing = function(opts){
     const dur = (11 + dist * 0.28 + Math.random() * 3.5).toFixed(1);
     el.style.animationDuration = dur + 's';
 
-    /* 从右侧进场：负 delay 让首屏就填满，而不是一条条慢慢来 */
-    el.style.animationDelay = (Math.random() * -1.6).toFixed(2) + 's';
+    /* 第一条稍微延后一点，让新的一轮不是"啪"地同时挤进来 */
+    el.style.animationDelay = (delay === undefined ? Math.random() * -1.6 : delay).toFixed(2) + 's';
 
     el.addEventListener('animationend', () => el.remove());
     layer.appendChild(el);
@@ -5504,40 +5548,112 @@ window.createRing = function(opts){
   function startDm(){
     if (!layer || reduce) return;
     const msgs = readMsgs();
-    const hash = msgs.map(m => (m.ts || '') + (m.name || '')).join('|');
-    if (hash === lastHash && dmTimer) return;    /* 同一批留言，别重来 */
-    lastHash = hash;
-
-    stopDm();
     if (msgs.length < 2) return;                 /* 只有一两条，飘起来很怪 */
 
-    /* 先撒 4 条铺满画面 */
-    for (let i = 0; i < Math.min(4, msgs.length); i++) spawn();
-    /* 之后每 2.6~4s 再来一条 */
+    const hash = msgs.map(m => (m.ts || '') + (m.name || '')).join('|');
+    const sameRound = (hash === lastHash && queue.length);
+    if (hash === lastHash && dmTimer) return;    /* 已经在跑，别重来 */
+
+    /* ⚠️ stopDm(true) —— 保留队列。
+       若每次都重洗，像"切后台回来""开关重开"这类重启
+       会把已经发过的牌again发一遍，屏幕上就是同一条重复飘。 */
+    stopDm(true);
+    lastHash = hash;
+
+    /* 留言本身变了（或者首次开播）→ 才重新洗一轮 */
+    if (!sameRound){
+      queue = shuffle(msgs.slice());
+      lastSentKey = '';
+    }
+
+    /* 先撒 3 条起个氛围（不是一上来就铺满——屏幕上同时太多会挡星星） */
+    const warm = Math.min(3, queue.length);
+    for (let i = 0; i < warm; i++) spawn(0);
+
+    /* 之后每 4.2 秒来一条。同屏上限 4 条兜底，
+       留言多时一轮走完约半分钟到一两分钟，正好够在星空屏待一会儿。
+       节奏靠 spawn 的"负 delay"错开：每条进场快慢不同，不会整齐划一。 */
     dmTimer = setInterval(() => {
-      spawn();
-      /* 自己管回收：层里留太多就清掉最老的 */
-      while (layer.children.length > 18) layer.removeChild(layer.firstChild);
-    }, 3200);
+      spawn(0);
+      /* 同屏上限 4 条：超出就回收最老的，避免越堆越多糊成一片 */
+      while (layer.children.length > 4) layer.removeChild(layer.firstChild);
+    }, 4200);
+  }
+
+  /* --------------------------------------------------------
+     开关：默认关闭
+     --------------------------------------------------------
+     弹幕从星空上飘过，有人觉得热闹、有人觉得挡视线。
+     默认不开，想看的自己打开；选过一次就记住（localStorage），
+     下次进站按你的意思来 —— 不用每回都点。
+     -------------------------------------------------------- */
+  const dmToggle = document.getElementById('dmToggle');
+  const dmState  = document.getElementById('dmState');
+  const dmHint   = document.getElementById('dmHint');
+  const DM_KEY = 'yh_danmaku';
+
+  let dmOn = false;
+  try { dmOn = localStorage.getItem(DM_KEY) === '1'; } catch(e){}
+
+  function syncToggle(){
+    if (dmToggle){
+      dmToggle.setAttribute('aria-checked', dmOn ? 'true' : 'false');
+      dmToggle.setAttribute('aria-label', dmOn ? '关闭弹幕' : '打开弹幕');
+    }
+    if (dmState) dmState.textContent = dmOn ? '开' : '关';
+    if (dmHint)  dmHint.textContent = dmOn
+      ? '留言正在从星空上飘过'
+      : '打开后，留言会从星空上飘过';
+  }
+
+  /* 只有「开关开着 + 在星空屏」两个条件同时满足才飘 */
+  function maybeStart(){
+    if (dmOn && skySlide && skySlide.classList.contains('active')) startDm();
+    else stopDm();
+  }
+
+  if (dmToggle){
+    syncToggle();
+    dmToggle.addEventListener('click', () => {
+      dmOn = !dmOn;
+      try { localStorage.setItem(DM_KEY, dmOn ? '1' : '0'); } catch(e){}
+      syncToggle();
+      /* 打开时重排一轮，保证从头开始、不接着上次的队列 */
+      lastHash = '';
+      maybeStart();
+    });
   }
 
   if (layer && skySlide){
-    /* 复用星空屏的激活钩子：进入就播，离开就停 */
+    /* 复用星空屏的激活钩子：进屏时按开关状态决定播不播 */
     new MutationObserver(() => {
-      if (skySlide.classList.contains('active')) startDm();
+      if (skySlide.classList.contains('active')) maybeStart();
       else stopDm();
     }).observe(skySlide, { attributes:true, attributeFilter:['class'] });
 
     /* 切后台回来时动画时序会被冻结，重来一遍更自然 */
     document.addEventListener('visibilitychange', () => {
       if (document.hidden) stopDm();
-      else if (skySlide.classList.contains('active')){ lastHash = ''; startDm(); }
+      else if (dmOn && skySlide.classList.contains('active')){ lastHash = ''; startDm(); }
     });
 
     /* 首屏就是星空屏时不会经过 MutationObserver */
-    if (skySlide.classList.contains('active')) startDm();
+    maybeStart();
   }
 
   /* 给留言提交后的刷新用：留言变了，弹幕也跟着换一批 */
-  window.__eggRefreshDm = () => { lastHash = ''; if (skySlide && skySlide.classList.contains('active')) startDm(); };
+  window.__eggRefreshDm = () => {
+    lastHash = '';
+    if (dmOn && skySlide && skySlide.classList.contains('active')) startDm();
+  };
+
+  /* 调试/自动化接口：不点开关也能查/改弹幕状态 */
+  window.__dmIsOn = () => dmOn;
+  window.__dmSet = on => {
+    dmOn = !!on;
+    try { localStorage.setItem(DM_KEY, dmOn ? '1' : '0'); } catch(e){}
+    syncToggle();
+    lastHash = '';
+    maybeStart();
+  };
 })();
